@@ -1,6 +1,29 @@
+#
+# Java
+#
 *.class
-
-# Package Files #
 *.jar
-*.war
-*.ear
+
+#
+# Compiled files directory
+#
+target/
+
+#
+# Eclipse
+#
+.settings/
+.metadata/
+.project
+.springBeans
+.classpath
+*.local.properties
+*.log
+*.log.*
+
+#
+# OS generated files
+#
+.DS_Store
+Icon?
+Thumbs.db
