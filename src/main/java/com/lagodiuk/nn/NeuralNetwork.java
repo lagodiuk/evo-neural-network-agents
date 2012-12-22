@@ -83,6 +83,10 @@ public class NeuralNetwork implements Cloneable {
         }
         return ret;
     }
+    
+    public int getNeuronsCount() {
+    	return neurons.size();
+    }
 
     public void setNeurons( List<Neuron> newNeurons ) {
         this.neurons = newNeurons;
