@@ -74,6 +74,20 @@ public class TestPerceptronXOR {
 		perceptron.putSignalToNeuron(1, -4.9902);
 		perceptron.activate();
 		assertEquals(1.0, perceptron.getAfterActivationSignal(lastNeuronIndx), 1e-5);
+
+		for (int i = -10; i < 11; i++) {
+			for (int j = -1; j < 11; j++) {
+				perceptron.putSignalToNeuron(0, i);
+				perceptron.putSignalToNeuron(1, j);
+				perceptron.activate();
+				double result = perceptron.getAfterActivationSignal(lastNeuronIndx);
+				if (i == j) {
+					assertEquals(0.0, result, 1e-5);
+				} else {
+					assertEquals(1.0, result, 1e-5);
+				}
+			}
+		}
 	}
 
 	@Test
@@ -130,7 +144,7 @@ public class TestPerceptronXOR {
 		smallerWeights.add(0.0);
 		try {
 			perceptron.setWeightsOfLinks(smallerWeights);
-			fail("Successfully set empty list of weights");
+			fail("Successfully set smaller list of weights");
 		} catch (IllegalArgumentException e) {
 			assertEquals("Number of links is 9. But weights list has size 2", e.getMessage());
 		}
@@ -142,7 +156,7 @@ public class TestPerceptronXOR {
 		}
 		try {
 			perceptron.setWeightsOfLinks(greathreWeights);
-			fail("Successfully set empty list of weights");
+			fail("Successfully set greather list of weights");
 		} catch (IllegalArgumentException e) {
 			assertEquals("Number of links is 9. But weights list has size 12", e.getMessage());
 		}
