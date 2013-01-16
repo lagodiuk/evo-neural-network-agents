@@ -1,4 +1,4 @@
-package com.lagodiuk.nn.genetic;
+package com.lagodiuk.nn.genetic.demo;
 
 import java.util.Random;
 
@@ -8,6 +8,7 @@ import com.lagodiuk.ga.IterartionListener;
 import com.lagodiuk.ga.Population;
 import com.lagodiuk.nn.ThresholdFunction;
 import com.lagodiuk.nn.ThresholdFunctions;
+import com.lagodiuk.nn.genetic.OptimizableNeuralNetwork;
 
 public class Launcher {
 
