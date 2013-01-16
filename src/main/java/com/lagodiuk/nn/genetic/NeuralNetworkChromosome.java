@@ -2,9 +2,11 @@ package com.lagodiuk.nn.genetic;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
+import java.util.Set;
 
 import com.lagodiuk.ga.Chromosome;
 import com.lagodiuk.nn.Neuron;
@@ -63,32 +65,48 @@ public class NeuralNetworkChromosome implements Chromosome<NeuralNetworkChromoso
 	}
 
 	private void uniformelyDistributedNeuronsCrossover(NeuralNetworkChromosome thisClone, NeuralNetworkChromosome anotherClone) {
-		int itersCount = this.random.nextInt(this.neurons.size());
+		int neuronsSize = this.neurons.size();
+		int itersCount = this.random.nextInt(neuronsSize);
 		if (itersCount == 0) {
 			itersCount = 1;
 		}
+		Set<Integer> used = new HashSet<Integer>();
 		for (int iter = 0; iter < itersCount; iter++) {
-			int i = this.random.nextInt(this.neurons.size());
+			int i = this.random.nextInt(neuronsSize);
+			if (neuronsSize > 1) {
+				while (used.contains(i)) {
+					i = this.random.nextInt(neuronsSize);
+				}
+			}
 			Neuron thisNeuron = thisClone.neurons.get(i);
 			Neuron anotherNeuron = anotherClone.neurons.get(i);
 
 			anotherClone.neurons.set(i, thisNeuron);
 			thisClone.neurons.set(i, anotherNeuron);
+			used.add(i);
 		}
 	}
 
 	private void uniformelyDistributedWeightsCrossover(NeuralNetworkChromosome thisClone, NeuralNetworkChromosome anotherClone) {
-		int itersCount = this.random.nextInt(this.weights.size());
+		int weightsSize = this.weights.size();
+		int itersCount = this.random.nextInt(weightsSize);
 		if (itersCount == 0) {
 			itersCount = 1;
 		}
+		Set<Integer> used = new HashSet<Integer>();
 		for (int iter = 0; iter < itersCount; iter++) {
-			int i = this.random.nextInt(this.weights.size());
+			int i = this.random.nextInt(weightsSize);
+			if (weightsSize > 1) {
+				while (used.contains(i)) {
+					i = this.random.nextInt(weightsSize);
+				}
+			}
 			double thisWeight = thisClone.weights.get(i);
 			double anotherWeight = anotherClone.weights.get(i);
 
 			anotherClone.weights.set(i, thisWeight);
 			thisClone.weights.set(i, anotherWeight);
+			used.add(i);
 		}
 	}
 
@@ -144,15 +162,25 @@ public class NeuralNetworkChromosome implements Chromosome<NeuralNetworkChromoso
 	}
 
 	private void mutateWeights() {
-		int itersCount = this.random.nextInt(this.weights.size());
+		int weightsSize = this.weights.size();
+		int itersCount = this.random.nextInt(weightsSize);
 		if (itersCount == 0) {
 			itersCount = 1;
 		}
+		Set<Integer> used = new HashSet<Integer>();
 		for (int iter = 0; iter < itersCount; iter++) {
-			int i = this.random.nextInt(this.weights.size());
+			int i = this.random.nextInt(weightsSize);
+			if (weightsSize > 1) {
+				while (used.contains(i)) {
+					i = this.random.nextInt(weightsSize);
+				}
+			}
 			double w = this.weights.get(i);
-			w += (this.random.nextDouble() - this.random.nextDouble()) * weightsMutationInterval;
+			w += (this.random.nextGaussian() - this.random.nextGaussian()) * weightsMutationInterval;
+			// w += (this.random.nextDouble() - this.random.nextDouble()) *
+			// weightsMutationInterval;
 			this.weights.set(i, w);
+			used.add(i);
 		}
 	}
 
@@ -175,34 +203,52 @@ public class NeuralNetworkChromosome implements Chromosome<NeuralNetworkChromoso
 	}
 
 	private void mutateNeuronsFunctionsParams() {
-		int itersCount = this.random.nextInt(this.neurons.size());
+		int neuronsSize = this.neurons.size();
+		int itersCount = this.random.nextInt(neuronsSize);
 		if (itersCount == 0) {
 			itersCount = 1;
 		}
+		Set<Integer> used = new HashSet<Integer>();
 		for (int iter = 0; iter < itersCount; iter++) {
-			int i = this.random.nextInt(this.neurons.size());
+			int i = this.random.nextInt(neuronsSize);
+			if (neuronsSize > 1) {
+				while (used.contains(i)) {
+					i = this.random.nextInt(neuronsSize);
+				}
+			}
 			Neuron n = this.neurons.get(i);
 
 			List<Double> params = n.getParams();
 			for (int j = 0; j < params.size(); j++) {
 				double param = params.get(j);
-				param += (this.random.nextDouble() - this.random.nextDouble()) * neuronParamsMutationInterval;
+				param += (this.random.nextGaussian() - this.random.nextGaussian()) * neuronParamsMutationInterval;
+				// param += (this.random.nextDouble() -
+				// this.random.nextDouble()) * neuronParamsMutationInterval;
 				params.set(j, param);
 			}
 			n.setFunctionAndParams(n.getFunction(), params);
+			used.add(i);
 		}
 	}
 
 	private void mutateChangeNeuronsFunctions() {
-		int itersCount = this.random.nextInt(this.neurons.size()) + 1;
-		if (itersCount > 1) {
-			itersCount--;
+		int neuronsSize = this.neurons.size();
+		int itersCount = this.random.nextInt(neuronsSize);
+		if (itersCount == 0) {
+			itersCount = 1;
 		}
+		Set<Integer> used = new HashSet<Integer>();
 		for (int iter = 0; iter < itersCount; iter++) {
-			int i = this.random.nextInt(this.neurons.size());
+			int i = this.random.nextInt(neuronsSize);
+			if (neuronsSize > 1) {
+				while (used.contains(i)) {
+					i = this.random.nextInt(neuronsSize);
+				}
+			}
 			Neuron n = this.neurons.get(i);
 			ThresholdFunction f = ThresholdFunctions.getRandomFunction();
 			n.setFunctionAndParams(f, f.getDefaultParams());
+			used.add(i);
 		}
 	}
 
