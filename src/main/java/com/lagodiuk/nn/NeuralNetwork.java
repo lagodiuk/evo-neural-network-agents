@@ -5,11 +5,11 @@ import java.util.List;
 
 public class NeuralNetwork implements Cloneable {
 
-	private List<Neuron> neurons;
+	protected List<Neuron> neurons;
 
-	private Links links = new Links();
+	protected Links links = new Links();
 
-	private int activationIterations = 1;
+	protected int activationIterations = 1;
 
 	public NeuralNetwork(int numberOfNeurons) {
 		this.neurons = new ArrayList<Neuron>(numberOfNeurons);

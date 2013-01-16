@@ -1,4 +1,4 @@
-package com.lagodiuk.nn.genetic.test;
+package com.lagodiuk.nn.genetic;
 
 import java.util.Random;
 
@@ -6,41 +6,56 @@ import com.lagodiuk.ga.Environment;
 import com.lagodiuk.ga.Fitness;
 import com.lagodiuk.ga.IterartionListener;
 import com.lagodiuk.ga.Population;
-import com.lagodiuk.nn.NeuralNetwork;
 import com.lagodiuk.nn.ThresholdFunction;
 import com.lagodiuk.nn.ThresholdFunctions;
-import com.lagodiuk.nn.genetic.NeuralNetworkChromosome;
-import com.lagodiuk.nn.genetic.NeuralNetworkContext;
 
 public class Launcher {
 
 	private static final int maxWeightNum = 10;
 
-	private static int getRandomWeight(Random random) {
-		return random.nextInt(maxWeightNum) - random.nextInt(maxWeightNum);
-	}
-
 	public static void main(String[] args) {
-		NeuralNetwork nn = initilNeuralNetwork();
-		NeuralNetworkContext context = new NeuralNetworkContext(nn);
-
-		Population<NeuralNetworkChromosome> population = new Population<NeuralNetworkChromosome>();
-		NeuralNetworkChromosome initialGene = context.getChromosome();
+		Population<OptimizableNeuralNetwork> population = new Population<OptimizableNeuralNetwork>();
+		OptimizableNeuralNetwork nn = initilNeuralNetwork();
 		for (int i = 0; i < 20; i++) {
-			population.addChromosome(initialGene.mutate());
+			population.addChromosome(nn.mutate());
 		}
 
-		Fitness<NeuralNetworkChromosome, Double> fit = new NnXorFitness(context);
+		Fitness<OptimizableNeuralNetwork, Double> fit = new Fitness<OptimizableNeuralNetwork, Double>() {
+			@Override
+			public Double calculate(OptimizableNeuralNetwork nn) {
+				double delt = 0;
+				for (int i = -5; i < 6; i++) {
+					for (int j = -5; j < 6; j++) {
+						double target;
+						if (i == j) {
+							target = 0;
+						} else {
+							target = 1;
+						}
 
-		Environment<NeuralNetworkChromosome, Double> env = new Environment<NeuralNetworkChromosome, Double>(population, fit);
-		env.setParentChromosomesSurviveCount(1);
+						nn.putSignalToNeuron(0, i);
+						nn.putSignalToNeuron(1, j);
 
-		env.addIterationListener(new IterartionListener<NeuralNetworkChromosome, Double>() {
+						nn.activate();
+
+						double nnOutput = nn.getAfterActivationSignal(5);
+
+						double d = nnOutput - target;
+						delt += d * d;
+					}
+				}
+				return delt;
+			}
+		};
+
+		Environment<OptimizableNeuralNetwork, Double> env = new Environment<OptimizableNeuralNetwork, Double>(population, fit);
+
+		env.addIterationListener(new IterartionListener<OptimizableNeuralNetwork, Double>() {
 			private Random random = new Random();
 
 			@Override
-			public void update(Environment<NeuralNetworkChromosome, Double> environment) {
-				NeuralNetworkChromosome gene = environment.getBest();
+			public void update(Environment<OptimizableNeuralNetwork, Double> environment) {
+				OptimizableNeuralNetwork gene = environment.getBest();
 				Double d = environment.fitness(gene);
 				System.out.println(environment.getIteration() + "\t" + d);
 
@@ -54,11 +69,7 @@ public class Launcher {
 
 		env.iterate(5500);
 
-		NeuralNetworkChromosome gene = env.getBest();
-		System.out.println(gene.getWeights());
-		System.out.println(gene.getNeurons());
-		context.applyChromosome(gene);
-		NeuralNetwork evoNn = context.getNeuralNetwork();
+		OptimizableNeuralNetwork evoNn = env.getBest();
 		for (int i = -10; i < -6; i++) {
 			System.out.println();
 			for (int j = -10; j < -6; j++) {
@@ -70,8 +81,8 @@ public class Launcher {
 		}
 	}
 
-	private static NeuralNetwork initilNeuralNetwork() {
-		NeuralNetwork nn = new NeuralNetwork(6);
+	private static OptimizableNeuralNetwork initilNeuralNetwork() {
+		OptimizableNeuralNetwork nn = new OptimizableNeuralNetwork(6);
 		for (int i = 0; i < 6; i++) {
 			ThresholdFunction f = ThresholdFunctions.getRandomFunction();
 			nn.setNeuronFunction(i, f, f.getDefaultParams());
@@ -91,4 +102,9 @@ public class Launcher {
 		nn.addLink(4, 5, getRandomWeight(rnd));
 		return nn;
 	}
+
+	private static int getRandomWeight(Random random) {
+		return random.nextInt(maxWeightNum) - random.nextInt(maxWeightNum);
+	}
+
 }
