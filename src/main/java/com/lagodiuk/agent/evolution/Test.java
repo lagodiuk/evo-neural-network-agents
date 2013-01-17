@@ -28,8 +28,7 @@ public class Test {
 	private static Random rnd = new Random();
 
 	public static void main(String[] args) throws Exception {
-		// TODO invalidate cache in genetic algorithm (?)
-		OptimizableNeuralNetwork bestBrain = evolveBestBrain(500);
+		OptimizableNeuralNetwork bestBrain = evolveBestBrain(300);
 		System.out.println(bestBrain);
 
 		final JFrame frame = new JFrame("Testing fishes visualizator");
@@ -74,7 +73,8 @@ public class Test {
 
 	private static OptimizableNeuralNetwork evolveBestBrain(int iterationsCount) {
 		Population<OptimizableNeuralNetwork> brains = new Population<OptimizableNeuralNetwork>();
-		for (int i = 0; i < 3; i++) {
+		int populationSize = 5;
+		for (int i = 0; i < populationSize; i++) {
 			brains.addChromosome(NeuralNetworkDrivenFish.randomNeuralNetworkBrain());
 		}
 
@@ -116,6 +116,8 @@ public class Test {
 				OptimizableNeuralNetwork bestBrain = ga.getBest();
 				Double fit = ga.fitness(bestBrain);
 				System.out.println(ga.getIteration() + "\t" + fit);
+
+				ga.clearCache();
 			}
 		});
 
