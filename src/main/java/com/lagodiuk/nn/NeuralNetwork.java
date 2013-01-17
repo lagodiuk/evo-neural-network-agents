@@ -112,4 +112,8 @@ public class NeuralNetwork implements Cloneable {
 		return clone;
 	}
 
+	@Override
+	public String toString() {
+		return "NeuralNetwork [neurons=" + this.neurons + ", links=" + this.links + ", activationIterations=" + this.activationIterations + "]";
+	}
 }

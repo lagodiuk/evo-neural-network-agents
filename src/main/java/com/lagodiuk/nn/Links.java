@@ -9,89 +9,93 @@ import java.util.Map;
 
 public class Links implements Cloneable {
 
-    private Map<Integer, Map<Integer, Double>> links = new LinkedHashMap<Integer, Map<Integer, Double>>();
+	private Map<Integer, Map<Integer, Double>> links = new LinkedHashMap<Integer, Map<Integer, Double>>();
 
-    private int totalLinksCount = 0;
+	private int totalLinksCount = 0;
 
-    public Collection<Integer> getReceivers( int activatorNeuronNumber ) {
-        Collection<Integer> ret = null;
-        if ( this.links.containsKey( activatorNeuronNumber ) ) {
-            ret = Collections.unmodifiableSet( this.links.get( activatorNeuronNumber ).keySet() );
-        } else {
-            ret = Collections.emptySet();
-        }
-        return ret;
-    }
+	public Collection<Integer> getReceivers(int activatorNeuronNumber) {
+		Collection<Integer> ret = null;
+		if (this.links.containsKey(activatorNeuronNumber)) {
+			ret = Collections.unmodifiableSet(this.links.get(activatorNeuronNumber).keySet());
+		} else {
+			ret = Collections.emptySet();
+		}
+		return ret;
+	}
 
-    public Double getWeight( int activatorNeuronNumber, int receiverNeuronNumber ) {
-        double weight = 0;
+	public Double getWeight(int activatorNeuronNumber, int receiverNeuronNumber) {
+		double weight = 0;
 
-        if ( this.links.containsKey( activatorNeuronNumber ) ) {
-            Map<Integer, Double> receiverNumToWeight = this.links.get( activatorNeuronNumber );
+		if (this.links.containsKey(activatorNeuronNumber)) {
+			Map<Integer, Double> receiverNumToWeight = this.links.get(activatorNeuronNumber);
 
-            if ( receiverNumToWeight.containsKey( receiverNeuronNumber ) ) {
-                weight = receiverNumToWeight.get( receiverNeuronNumber );
-            } else {
-                throw new IllegalArgumentException();
-            }
-        } else {
-            throw new IllegalArgumentException();
-        }
-        return weight;
-    }
+			if (receiverNumToWeight.containsKey(receiverNeuronNumber)) {
+				weight = receiverNumToWeight.get(receiverNeuronNumber);
+			} else {
+				throw new IllegalArgumentException();
+			}
+		} else {
+			throw new IllegalArgumentException();
+		}
+		return weight;
+	}
 
-    public void addWeight( int activatorNeuronNumber, int receiverNeuronNumber, double weight ) {
-        if ( !this.links.containsKey( activatorNeuronNumber ) ) {
-            this.links.put( activatorNeuronNumber, new LinkedHashMap<Integer, Double>() );
-        }
-        this.links.get( activatorNeuronNumber ).put( receiverNeuronNumber, weight );
-        this.totalLinksCount++;
-    }
+	public void addWeight(int activatorNeuronNumber, int receiverNeuronNumber, double weight) {
+		if (!this.links.containsKey(activatorNeuronNumber)) {
+			this.links.put(activatorNeuronNumber, new LinkedHashMap<Integer, Double>());
+		}
+		this.links.get(activatorNeuronNumber).put(receiverNeuronNumber, weight);
+		this.totalLinksCount++;
+	}
 
-    public List<Double> getAllWeights() {
-        List<Double> weights = new ArrayList<Double>( this.totalLinksCount );
+	public List<Double> getAllWeights() {
+		List<Double> weights = new ArrayList<Double>(this.totalLinksCount);
 
-        for ( Integer activatorIndx : this.links.keySet() ) {
-            Map<Integer, Double> receiverIndxToWeight = this.links.get( activatorIndx );
+		for (Integer activatorIndx : this.links.keySet()) {
+			Map<Integer, Double> receiverIndxToWeight = this.links.get(activatorIndx);
 
-            for ( Integer receiverIndx : receiverIndxToWeight.keySet() ) {
-                weights.add( receiverIndxToWeight.get( receiverIndx ) );
-            }
-        }
+			for (Integer receiverIndx : receiverIndxToWeight.keySet()) {
+				weights.add(receiverIndxToWeight.get(receiverIndx));
+			}
+		}
 
-        return weights;
-    }
+		return weights;
+	}
 
-    public void setAllWeights( List<Double> weights ) {
-        if ( weights.size() != this.totalLinksCount ) {
-            throw new IllegalArgumentException( "Number of links is " + this.totalLinksCount
-                    + ". But weights list has size " + weights.size() );
-        }
+	public void setAllWeights(List<Double> weights) {
+		if (weights.size() != this.totalLinksCount) {
+			throw new IllegalArgumentException("Number of links is " + this.totalLinksCount
+					+ ". But weights list has size " + weights.size());
+		}
 
-        int indx = 0;
-        for ( Integer activatorIndx : this.links.keySet() ) {
-            Map<Integer, Double> receiverIndxToWeight = this.links.get( activatorIndx );
+		int indx = 0;
+		for (Integer activatorIndx : this.links.keySet()) {
+			Map<Integer, Double> receiverIndxToWeight = this.links.get(activatorIndx);
 
-            for ( Integer receiverIndx : receiverIndxToWeight.keySet() ) {
-                receiverIndxToWeight.put( receiverIndx, weights.get( indx ) );
-                indx++;
-            }
-        }
-    }
+			for (Integer receiverIndx : receiverIndxToWeight.keySet()) {
+				receiverIndxToWeight.put(receiverIndx, weights.get(indx));
+				indx++;
+			}
+		}
+	}
 
-    @Override
-    public Links clone() {
-        Links clone = new Links();
-        clone.totalLinksCount = this.totalLinksCount;
-        clone.links = new LinkedHashMap<Integer, Map<Integer, Double>>();
-        for ( int key : this.links.keySet() ) {
-            Map<Integer, Double> val = new LinkedHashMap<Integer, Double>();
-            for ( int valKey : this.links.get( key ).keySet() ) {
-                val.put( valKey, this.links.get( key ).get( valKey ) );
-            }
-            clone.links.put( key, val );
-        }
-        return clone;
-    }
+	@Override
+	public Links clone() {
+		Links clone = new Links();
+		clone.totalLinksCount = this.totalLinksCount;
+		clone.links = new LinkedHashMap<Integer, Map<Integer, Double>>();
+		for (int key : this.links.keySet()) {
+			Map<Integer, Double> val = new LinkedHashMap<Integer, Double>();
+			for (int valKey : this.links.get(key).keySet()) {
+				val.put(valKey, this.links.get(key).get(valKey));
+			}
+			clone.links.put(key, val);
+		}
+		return clone;
+	}
 
+	@Override
+	public String toString() {
+		return "Links [links=" + this.links + ", totalLinksCount=" + this.totalLinksCount + "]";
+	}
 }

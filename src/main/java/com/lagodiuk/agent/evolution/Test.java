@@ -28,7 +28,9 @@ public class Test {
 	private static Random rnd = new Random();
 
 	public static void main(String[] args) throws Exception {
-		OptimizableNeuralNetwork bestBrain = evolveBestBrain(200);
+		// TODO invalidate cache in genetic algorithm (?)
+		OptimizableNeuralNetwork bestBrain = evolveBestBrain(500);
+		System.out.println(bestBrain);
 
 		final JFrame frame = new JFrame("Testing fishes visualizator");
 		frame.setBounds(100, 100, 700, 600);
@@ -39,7 +41,7 @@ public class Test {
 		AgentsEnvironment environment = new AgentsEnvironment(600, 400);
 		environment.addListener(new TournamentListener());
 
-		for (int i = 0; i < 30; i++) {
+		for (int i = 0; i < 15; i++) {
 			NeuralNetworkDrivenFish fish =
 					new NeuralNetworkDrivenFish(random.nextInt(600), random.nextInt(400), random.nextDouble() * 2 * Math.PI);
 			fish.setBrain(bestBrain);
@@ -113,7 +115,7 @@ public class Test {
 			public void update(Environment<OptimizableNeuralNetwork, Double> ga) {
 				OptimizableNeuralNetwork bestBrain = ga.getBest();
 				Double fit = ga.fitness(bestBrain);
-				System.out.println(fit);
+				System.out.println(ga.getIteration() + "\t" + fit);
 			}
 		});
 
