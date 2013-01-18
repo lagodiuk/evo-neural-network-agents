@@ -42,8 +42,8 @@ public class NeuralNetworkDrivenFish extends Fish {
 
 		this.activateNeuralNetwork(nnInputs);
 
-		double angle = this.brain.getAfterActivationSignal(13);
-		double speed = this.brain.getAfterActivationSignal(14);
+		double angle = this.brain.getAfterActivationSignal(this.brain.getNeuronsCount() - 2);
+		double speed = this.brain.getAfterActivationSignal(this.brain.getNeuronsCount() - 1);
 
 		speed = this.normalizeSpeed(this.getSpeed() + speed);
 		angle = this.normalizeAngle(angle);
@@ -78,13 +78,7 @@ public class NeuralNetworkDrivenFish extends Fish {
 		this.brain.activate();
 	}
 
-	private List<Double> createNnInputs(AgentsEnvironment environment) {
-		double rx = this.getRx();
-		double ry = this.getRy();
-
-		double x = this.getX();
-		double y = this.getY();
-
+	protected List<Double> createNnInputs(AgentsEnvironment environment) {
 		// Find nearest food
 		Food nearestFood = null;
 		double nearestFoodDist = Double.MAX_VALUE;
@@ -92,11 +86,11 @@ public class NeuralNetworkDrivenFish extends Fish {
 			if (obj instanceof Food) {
 				Food currFood = (Food) obj;
 
-				double currFoodDist = this.module(currFood.getX() - x, currFood.getY() - y);
+				double currFoodDist = this.distanceTo(currFood);
 
 				if ((nearestFood == null) || (currFoodDist <= nearestFoodDist)) {
 					// fish can see only ahead
-					if (this.cosTeta(rx, ry, currFood.getX() - x, currFood.getY() - y) > 0) {
+					if (this.inSight(currFood)) {
 						nearestFood = currFood;
 						nearestFoodDist = currFoodDist;
 					}
@@ -115,11 +109,11 @@ public class NeuralNetworkDrivenFish extends Fish {
 					continue;
 				}
 
-				double currFishDist = this.module(currFish.getX() - x, currFish.getY() - y);
+				double currFishDist = this.distanceTo(currFish);
 
 				if (currFishDist <= nearestFishDist) {
 					// fish can see only ahead
-					if (this.cosTeta(rx, ry, currFish.getX() - x, currFish.getY() - y) > 0) {
+					if (this.inSight(currFish)) {
 						nearestFish = currFish;
 						nearestFishDist = currFishDist;
 					}
@@ -129,10 +123,17 @@ public class NeuralNetworkDrivenFish extends Fish {
 
 		List<Double> nnInputs = new LinkedList<Double>();
 
+		double rx = this.getRx();
+		double ry = this.getRy();
+
+		double x = this.getX();
+		double y = this.getY();
+
 		if (nearestFood != null) {
 			double foodDirectionVectorX = nearestFood.getX() - x;
 			double foodDirectionVectorY = nearestFood.getY() - y;
 
+			// left/right
 			double foodDirectionCosTeta =
 					Math.signum(this.vectorCrossProduct(rx, ry, foodDirectionVectorX, foodDirectionVectorY))
 							* this.cosTeta(rx, ry, foodDirectionVectorX, foodDirectionVectorY);
@@ -151,6 +152,7 @@ public class NeuralNetworkDrivenFish extends Fish {
 			double fishDirectionVectorX = nearestFish.getX() - x;
 			double fishDirectionVectorY = nearestFish.getY() - y;
 
+			// left/right
 			double fishDirectionCosTeta =
 					Math.signum(this.vectorCrossProduct(rx, ry, fishDirectionVectorX, fishDirectionVectorY))
 							* this.cosTeta(rx, ry, fishDirectionVectorX, fishDirectionVectorY);
@@ -167,7 +169,16 @@ public class NeuralNetworkDrivenFish extends Fish {
 		return nnInputs;
 	}
 
-	private double cosTeta(double vx1, double vy1, double vx2, double vy2) {
+	protected boolean inSight(Agent agent) {
+		double crossProduct = this.cosTeta(this.getRx(), this.getRy(), agent.getX() - this.getX(), agent.getY() - this.getY());
+		return (crossProduct > 0);
+	}
+
+	protected double distanceTo(Agent agent) {
+		return this.module(agent.getX() - this.getX(), agent.getY() - this.getY());
+	}
+
+	protected double cosTeta(double vx1, double vy1, double vx2, double vy2) {
 		double v1 = this.module(vx1, vy1);
 		double v2 = this.module(vx2, vy2);
 		if (v1 == 0) {
@@ -184,7 +195,7 @@ public class NeuralNetworkDrivenFish extends Fish {
 		return Math.sqrt((vx1 * vx1) + (vy1 * vy1));
 	}
 
-	private double vectorCrossProduct(double vx1, double vy1, double vx2, double vy2) {
+	protected double vectorCrossProduct(double vx1, double vy1, double vx2, double vy2) {
 		return (vx1 * vy2) - (vy1 * vx2);
 	}
 
