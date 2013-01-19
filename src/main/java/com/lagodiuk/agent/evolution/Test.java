@@ -91,7 +91,7 @@ public class Test {
 							fish.setBrain(chromosome);
 							env.addAgent(fish);
 						}
-						for (int i = 0; i < 10; i++) {
+						for (int i = 0; i < 5; i++) {
 							Food food = new Food(rnd.nextInt(w), rnd.nextInt(h));
 							env.addAgent(food);
 						}

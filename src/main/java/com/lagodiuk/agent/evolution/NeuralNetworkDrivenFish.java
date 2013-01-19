@@ -16,8 +16,6 @@ public class NeuralNetworkDrivenFish extends Fish {
 
 	private static final double maxSpeed = 4;
 
-	protected static final double minEatDistance = 5;
-
 	protected static final double maxFishesDistance = 5;
 
 	private static final double FISH = -10;
