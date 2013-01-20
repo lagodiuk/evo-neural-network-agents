@@ -135,7 +135,7 @@ public class Test {
 
 		protected static final double maxFishesDistance = 5;
 
-		private int score = 0;
+		private double score = 0;
 
 		@Override
 		public void notify(AgentsEnvironment env) {
@@ -191,7 +191,10 @@ public class Test {
 			return fishes;
 		}
 
-		public int getScore() {
+		public double getScore() {
+			if (this.score < 0) {
+				return 0;
+			}
 			return this.score;
 		}
 

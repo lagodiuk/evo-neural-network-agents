@@ -135,38 +135,59 @@ public class Test {
 
 		protected static final double maxFishesDistance = 5;
 
-		private int score = 0;
+		private Random random = new Random();
+
+		private double score = 0;
 
 		@Override
 		public void notify(AgentsEnvironment env) {
+			List<Food> eatenFood = this.getEatenFood(env);
+			this.score += eatenFood.size();
+
+			List<Fish> collidedFishes = getCollidedFishes(env);
+			this.score -= collidedFishes.size() * 0.5;
+
+			this.removeEatenAndCreateNewFood(env, eatenFood);
+		}
+
+		private List<Fish> getCollidedFishes(AgentsEnvironment env) {
+			List<Fish> collidedFishes = new LinkedList<Fish>();
+			List<Fish> fishes = this.getFishes(env);
+			for (int i = 0; i < (fishes.size() - 1); i++) {
+				Fish firstFish = fishes.get(i);
+				for (int j = i + 1; j < fishes.size(); j++) {
+					Fish secondFish = fishes.get(j);
+					double distanceToSecondFish = this.module(firstFish.getX() - secondFish.getX(), firstFish.getY() - secondFish.getY());
+					if (distanceToSecondFish < maxFishesDistance) {
+						collidedFishes.add(secondFish);
+						// this.score -= 0.5;
+					}
+				}
+			}
+			return collidedFishes;
+		}
+
+		private List<Food> getEatenFood(AgentsEnvironment env) {
 			List<Food> eatenFood = new LinkedList<Food>();
 
 			F: for (Food food : this.getFood(env)) {
 				for (Fish fish : this.getFishes(env)) {
-					if (this.module(food.getX() - fish.getX(), food.getY() - fish.getY()) < minEatDistance) {
-						this.score++;
+					double distanceToFood = this.module(food.getX() - fish.getX(), food.getY() - fish.getY());
+					if (distanceToFood < minEatDistance) {
+						// this.score++;
 						eatenFood.add(food);
 						continue F;
 					}
 				}
 			}
+			return eatenFood;
+		}
 
-			List<Fish> fishes = this.getFishes(env);
-			for (int i = 0; i < (fishes.size() - 1); i++) {
-				Fish first = fishes.get(i);
-				for (int j = i + 1; j < fishes.size(); j++) {
-					Fish second = fishes.get(j);
-					if (this.module(first.getX() - second.getX(), first.getY() - second.getY()) < maxFishesDistance) {
-						this.score -= 0.5;
-					}
-				}
-			}
-
-			Random random = new Random();
+		private void removeEatenAndCreateNewFood(AgentsEnvironment env, List<Food> eatenFood) {
 			for (Food food : eatenFood) {
 				env.removeAgent(food);
 
-				Food newFood = new Food(random.nextInt(env.getWidth()), random.nextInt(env.getHeight()));
+				Food newFood = new Food(this.random.nextInt(env.getWidth()), this.random.nextInt(env.getHeight()));
 				env.addAgent(newFood);
 			}
 		}
@@ -191,7 +212,10 @@ public class Test {
 			return fishes;
 		}
 
-		public int getScore() {
+		public double getScore() {
+			if (this.score < 0) {
+				return 0;
+			}
 			return this.score;
 		}
 
