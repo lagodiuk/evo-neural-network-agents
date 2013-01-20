@@ -40,17 +40,19 @@ public class NeuralNetworkDrivenFish extends Fish {
 
 		this.activateNeuralNetwork(nnInputs);
 
-		double angle = this.brain.getAfterActivationSignal(this.brain.getNeuronsCount() - 2);
-		double speed = this.brain.getAfterActivationSignal(this.brain.getNeuronsCount() - 1);
+		int neuronsCount = this.brain.getNeuronsCount();
+		double deltaAngle = this.brain.getAfterActivationSignal(neuronsCount - 2);
+		double deltaSpeed = this.brain.getAfterActivationSignal(neuronsCount - 1);
 
-		speed = this.normalizeSpeed(this.getSpeed() + speed);
-		angle = this.normalizeAngle(angle);
+		double newSpeed = this.normalizeSpeed(this.getSpeed() + deltaSpeed);
+		double newAngle = this.getAngle() + this.normalizeDeltaAngle(deltaAngle);
 
-		this.setAngle(this.getAngle() + angle);
-		this.setSpeed(speed);
+		this.setAngle(newAngle);
+		this.setSpeed(newSpeed);
 
 		this.move();
 
+		// avoid moving outside of environment
 		double newX = this.getX();
 		double newY = this.getY();
 		if (newX < 0) {
@@ -65,6 +67,7 @@ public class NeuralNetworkDrivenFish extends Fish {
 		if (newY > env.getHeight()) {
 			newY = 1;
 		}
+
 		this.setX(newX);
 		this.setY(newY);
 	}
@@ -80,6 +83,7 @@ public class NeuralNetworkDrivenFish extends Fish {
 		// Find nearest food
 		Food nearestFood = null;
 		double nearestFoodDist = Double.MAX_VALUE;
+		// TODO use Guava
 		for (Agent obj : environment.getAgents()) {
 			if (obj instanceof Food) {
 				Food currFood = (Food) obj;
@@ -99,6 +103,7 @@ public class NeuralNetworkDrivenFish extends Fish {
 		// Find nearest fish
 		Fish nearestFish = null;
 		double nearestFishDist = maxFishesDistance;
+		// TODO use Guava
 		for (Agent obj : environment.getAgents()) {
 			if (obj instanceof Fish) {
 				Fish currFish = (Fish) obj;
@@ -131,9 +136,9 @@ public class NeuralNetworkDrivenFish extends Fish {
 			double foodDirectionVectorX = nearestFood.getX() - x;
 			double foodDirectionVectorY = nearestFood.getY() - y;
 
-			// left/right
+			// left/right cos
 			double foodDirectionCosTeta =
-					Math.signum(this.vectorCrossProduct(rx, ry, foodDirectionVectorX, foodDirectionVectorY))
+					Math.signum(this.pseudoScalarProduct(rx, ry, foodDirectionVectorX, foodDirectionVectorY))
 							* this.cosTeta(rx, ry, foodDirectionVectorX, foodDirectionVectorY);
 
 			nnInputs.add(FOOD);
@@ -150,9 +155,9 @@ public class NeuralNetworkDrivenFish extends Fish {
 			double fishDirectionVectorX = nearestFish.getX() - x;
 			double fishDirectionVectorY = nearestFish.getY() - y;
 
-			// left/right
+			// left/right cos
 			double fishDirectionCosTeta =
-					Math.signum(this.vectorCrossProduct(rx, ry, fishDirectionVectorX, fishDirectionVectorY))
+					Math.signum(this.pseudoScalarProduct(rx, ry, fishDirectionVectorX, fishDirectionVectorY))
 							* this.cosTeta(rx, ry, fishDirectionVectorX, fishDirectionVectorY);
 
 			nnInputs.add(FISH);
@@ -193,7 +198,7 @@ public class NeuralNetworkDrivenFish extends Fish {
 		return Math.sqrt((vx1 * vx1) + (vy1 * vy1));
 	}
 
-	protected double vectorCrossProduct(double vx1, double vy1, double vx2, double vy2) {
+	protected double pseudoScalarProduct(double vx1, double vy1, double vx2, double vy2) {
 		return (vx1 * vy2) - (vy1 * vx2);
 	}
 
@@ -205,7 +210,7 @@ public class NeuralNetworkDrivenFish extends Fish {
 		return speed;
 	}
 
-	private double normalizeAngle(double angle) {
+	private double normalizeDeltaAngle(double angle) {
 		if (Math.abs(angle) > 1) {
 			angle = Math.signum(angle)
 					* (Math.abs(angle) - Math.floor(Math.abs(angle)));

@@ -17,11 +17,6 @@ public class Fish implements Agent {
 		this.angle = angle;
 	}
 
-	public void rotate(double angle) {
-		this.angle += angle;
-		this.angle = this.angle - (Math.floor(this.angle / Math.PI) * Math.PI);
-	}
-
 	public void move() {
 		double rx = -Math.sin(this.angle);
 		double ry = Math.cos(this.angle);
