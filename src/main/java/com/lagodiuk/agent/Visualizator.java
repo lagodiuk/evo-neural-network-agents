@@ -1,4 +1,4 @@
-package com.lagodiuk.agent.visualization;
+package com.lagodiuk.agent;
 
 import java.awt.Color;
 import java.awt.Graphics2D;
@@ -9,10 +9,6 @@ import java.util.Random;
 import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
 
-import com.lagodiuk.agent.Agent;
-import com.lagodiuk.agent.AgentsEnvironment;
-import com.lagodiuk.agent.Fish;
-import com.lagodiuk.agent.Food;
 import com.lagodiuk.agent.evolution.NeuralNetworkDrivenFish;
 
 public class Visualizator {

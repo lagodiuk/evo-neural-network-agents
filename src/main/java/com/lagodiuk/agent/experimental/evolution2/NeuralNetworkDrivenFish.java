@@ -1,4 +1,4 @@
-package com.lagodiuk.agent.evolution2;
+package com.lagodiuk.agent.experimental.evolution2;
 
 import java.util.LinkedList;
 import java.util.List;

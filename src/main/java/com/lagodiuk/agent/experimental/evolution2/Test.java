@@ -1,4 +1,4 @@
-package com.lagodiuk.agent.evolution2;
+package com.lagodiuk.agent.experimental.evolution2;
 
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
@@ -16,7 +16,7 @@ import com.lagodiuk.agent.AgentsEnvironment;
 import com.lagodiuk.agent.AgentsEnvironmentListener;
 import com.lagodiuk.agent.Fish;
 import com.lagodiuk.agent.Food;
-import com.lagodiuk.agent.visualization.Visualizator;
+import com.lagodiuk.agent.Visualizator;
 import com.lagodiuk.ga.Environment;
 import com.lagodiuk.ga.Fitness;
 import com.lagodiuk.ga.IterartionListener;

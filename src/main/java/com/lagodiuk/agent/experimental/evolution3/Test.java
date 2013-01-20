@@ -1,4 +1,4 @@
-package com.lagodiuk.agent.evolution;
+package com.lagodiuk.agent.experimental.evolution3;
 
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
@@ -85,19 +85,19 @@ public class Test {
 						int w = 200;
 						int h = 200;
 						AgentsEnvironment env = new AgentsEnvironment(w, h);
-						for (int i = 0; i < 10; i++) {
+						for (int i = 0; i < 5; i++) {
 							NeuralNetworkDrivenFish fish =
 									new NeuralNetworkDrivenFish(rnd.nextInt(w), rnd.nextInt(h), 2 * Math.PI * rnd.nextDouble());
 							fish.setBrain(chromosome);
 							env.addAgent(fish);
 						}
-						for (int i = 0; i < 5; i++) {
+						for (int i = 0; i < 3; i++) {
 							Food food = new Food(rnd.nextInt(w), rnd.nextInt(h));
 							env.addAgent(food);
 						}
 						TournamentListener tournamentListener = new TournamentListener();
 						env.addListener(tournamentListener);
-						for (int i = 0; i < 50; i++) {
+						for (int i = 0; i < 150; i++) {
 							env.timeStep();
 						}
 
@@ -140,6 +140,7 @@ public class Test {
 		@Override
 		public void notify(AgentsEnvironment env) {
 			List<Food> eatenFood = new LinkedList<Food>();
+			List<Fish> brokenFishes = new LinkedList<Fish>();
 
 			F: for (Food food : this.getFood(env)) {
 				for (Fish fish : this.getFishes(env)) {
@@ -156,10 +157,19 @@ public class Test {
 				Fish first = fishes.get(i);
 				for (int j = i + 1; j < fishes.size(); j++) {
 					Fish second = fishes.get(j);
-					if (this.module(first.getX() - second.getX(), first.getY() - second.getY()) < maxFishesDistance) {
+					double module = this.module(first.getX() - second.getX(), first.getY() - second.getY());
+					if (module < maxFishesDistance) {
 						this.score -= 0.5;
+						if (module < (maxFishesDistance / 2)) {
+							brokenFishes.add(first);
+							this.score -= 2;
+						}
 					}
 				}
+			}
+
+			if (this.score < 0) {
+				this.score = 0;
 			}
 
 			Random random = new Random();
@@ -168,6 +178,10 @@ public class Test {
 
 				Food newFood = new Food(random.nextInt(env.getWidth()), random.nextInt(env.getHeight()));
 				env.addAgent(newFood);
+			}
+
+			for (Fish f : brokenFishes) {
+				env.removeAgent(f);
 			}
 		}
 
