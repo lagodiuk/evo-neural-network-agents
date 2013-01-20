@@ -17,7 +17,7 @@ import com.lagodiuk.agent.AgentsEnvironmentListener;
 import com.lagodiuk.agent.Fish;
 import com.lagodiuk.agent.Food;
 import com.lagodiuk.agent.Visualizator;
-import com.lagodiuk.ga.Environment;
+import com.lagodiuk.ga.GeneticAlgorithm;
 import com.lagodiuk.ga.Fitness;
 import com.lagodiuk.ga.IterartionListener;
 import com.lagodiuk.ga.Population;
@@ -107,12 +107,12 @@ public class Test {
 					}
 				};
 
-		Environment<OptimizableNeuralNetwork, Double> ga =
-				new Environment<OptimizableNeuralNetwork, Double>(brains, fit);
+		GeneticAlgorithm<OptimizableNeuralNetwork, Double> ga =
+				new GeneticAlgorithm<OptimizableNeuralNetwork, Double>(brains, fit);
 
 		ga.addIterationListener(new IterartionListener<OptimizableNeuralNetwork, Double>() {
 			@Override
-			public void update(Environment<OptimizableNeuralNetwork, Double> ga) {
+			public void update(GeneticAlgorithm<OptimizableNeuralNetwork, Double> ga) {
 				OptimizableNeuralNetwork bestBrain = ga.getBest();
 				Double fit = ga.fitness(bestBrain);
 				System.out.println(ga.getIteration() + "\t" + fit);

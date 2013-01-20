@@ -2,7 +2,7 @@ package com.lagodiuk.nn.genetic.demo;
 
 import java.util.Random;
 
-import com.lagodiuk.ga.Environment;
+import com.lagodiuk.ga.GeneticAlgorithm;
 import com.lagodiuk.ga.Fitness;
 import com.lagodiuk.ga.IterartionListener;
 import com.lagodiuk.ga.Population;
@@ -49,13 +49,13 @@ public class Launcher {
 			}
 		};
 
-		Environment<OptimizableNeuralNetwork, Double> env = new Environment<OptimizableNeuralNetwork, Double>(population, fit);
+		GeneticAlgorithm<OptimizableNeuralNetwork, Double> env = new GeneticAlgorithm<OptimizableNeuralNetwork, Double>(population, fit);
 
 		env.addIterationListener(new IterartionListener<OptimizableNeuralNetwork, Double>() {
 			private Random random = new Random();
 
 			@Override
-			public void update(Environment<OptimizableNeuralNetwork, Double> environment) {
+			public void update(GeneticAlgorithm<OptimizableNeuralNetwork, Double> environment) {
 				OptimizableNeuralNetwork gene = environment.getBest();
 				Double d = environment.fitness(gene);
 				System.out.println(environment.getIteration() + "\t" + d);
