@@ -65,8 +65,10 @@ public class Main {
 		JPanel controlsPanel = new JPanel();
 		frame.add(controlsPanel, BorderLayout.EAST);
 		controlsPanel.setLayout(new GridLayout(11, 1, 5, 5));
+
 		final JTextField evolveTextField = new JTextField("10");
 		controlsPanel.add(evolveTextField);
+
 		final JButton evolveButton = new JButton("evolve");
 		controlsPanel.add(evolveButton);
 
@@ -82,9 +84,11 @@ public class Main {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
 				evolveButton.setEnabled(false);
-				final int iterCount = Integer.parseInt(evolveTextField.getText());
+				evolveTextField.setEnabled(false);
 				progressBar.setVisible(true);
 				progressBar.setValue(0);
+
+				final int iterCount = Integer.parseInt(evolveTextField.getText());
 
 				new Thread(new Runnable() {
 					@Override
@@ -112,6 +116,7 @@ public class Main {
 							public void run() {
 								progressBar.setVisible(false);
 								evolveButton.setEnabled(true);
+								evolveTextField.setEnabled(true);
 							}
 						});
 
