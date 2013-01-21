@@ -13,7 +13,7 @@ import javax.swing.SwingUtilities;
 
 import com.lagodiuk.agent.Agent;
 import com.lagodiuk.agent.AgentsEnvironment;
-import com.lagodiuk.agent.AgentsEnvironmentListener;
+import com.lagodiuk.agent.AgentsEnvironmentObserver;
 import com.lagodiuk.agent.Fish;
 import com.lagodiuk.agent.Food;
 import com.lagodiuk.agent.Visualizator;
@@ -123,13 +123,13 @@ public class Test {
 
 		ga.setParentChromosomesSurviveCount(1);
 
-		ga.iterate(iterationsCount);
+		ga.evolve(iterationsCount);
 
 		OptimizableNeuralNetwork bestBrain = ga.getBest();
 		return bestBrain;
 	}
 
-	public static class TournamentListener implements AgentsEnvironmentListener {
+	public static class TournamentListener implements AgentsEnvironmentObserver {
 
 		protected static final double minEatDistance = 5;
 

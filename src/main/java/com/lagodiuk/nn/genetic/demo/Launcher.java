@@ -68,7 +68,7 @@ public class Launcher {
 			}
 		});
 
-		env.iterate(5500);
+		env.evolve(5500);
 
 		OptimizableNeuralNetwork evoNn = env.getBest();
 		for (int i = -10; i < -6; i++) {

@@ -12,14 +12,14 @@ public class AgentsEnvironment {
 
 	private List<Agent> agents = new ArrayList<Agent>();
 
-	private List<AgentsEnvironmentListener> listeners = new ArrayList<AgentsEnvironmentListener>();
+	private List<AgentsEnvironmentObserver> listeners = new ArrayList<AgentsEnvironmentObserver>();
 
 	public AgentsEnvironment(int width, int height) {
 		this.width = width;
 		this.height = height;
 	}
 
-	public void addListener(AgentsEnvironmentListener listener) {
+	public void addListener(AgentsEnvironmentObserver listener) {
 		this.listeners.add(listener);
 	}
 
@@ -37,7 +37,7 @@ public class AgentsEnvironment {
 		for (Agent agent : agentsWrap) {
 			agent.interact(this);
 		}
-		for (AgentsEnvironmentListener l : this.listeners) {
+		for (AgentsEnvironmentObserver l : this.listeners) {
 			l.notify(this);
 		}
 	}

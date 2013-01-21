@@ -1,6 +1,6 @@
 package com.lagodiuk.agent;
 
-public interface AgentsEnvironmentListener {
+public interface AgentsEnvironmentObserver {
 
 	void notify(AgentsEnvironment env);
 

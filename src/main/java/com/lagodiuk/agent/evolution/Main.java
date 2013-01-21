@@ -4,10 +4,9 @@ import java.awt.BorderLayout;
 import java.awt.Graphics2D;
 import java.awt.GridLayout;
 import java.awt.RenderingHints;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Random;
 
 import javax.swing.JButton;
@@ -19,34 +18,31 @@ import javax.swing.SwingUtilities;
 
 import com.lagodiuk.agent.Agent;
 import com.lagodiuk.agent.AgentsEnvironment;
-import com.lagodiuk.agent.AgentsEnvironmentListener;
-import com.lagodiuk.agent.Fish;
 import com.lagodiuk.agent.Food;
 import com.lagodiuk.agent.Visualizator;
 import com.lagodiuk.ga.Fitness;
 import com.lagodiuk.ga.GeneticAlgorithm;
 import com.lagodiuk.ga.IterartionListener;
 import com.lagodiuk.ga.Population;
+import com.lagodiuk.nn.NeuralNetwork;
 import com.lagodiuk.nn.genetic.OptimizableNeuralNetwork;
 
-public class Test {
+public class Main {
 
 	private static Random random = new Random();
 
 	public static void main(String[] args) throws Exception {
 		final GeneticAlgorithm<OptimizableNeuralNetwork, Double> ga = initializeGeneticAlgorithm();
-		ga.iterate(300);
 
 		OptimizableNeuralNetwork bestBrain = ga.getBest();
-		System.out.println(bestBrain);
 
 		int environmentWidth = 600;
 		int environmentHeight = 400;
 		int fishesCount = 15;
 		int foodCount = 10;
 
-		AgentsEnvironment environment = new AgentsEnvironment(environmentWidth, environmentHeight);
-		environment.addListener(new TournamentListener());
+		final AgentsEnvironment environment = new AgentsEnvironment(environmentWidth, environmentHeight);
+		environment.addListener(new EatenFoodObserver());
 
 		addFishes(environment, bestBrain, fishesCount);
 		addFood(environment, foodCount);
@@ -69,23 +65,66 @@ public class Test {
 		JPanel controlsPanel = new JPanel();
 		frame.add(controlsPanel, BorderLayout.EAST);
 		controlsPanel.setLayout(new GridLayout(11, 1, 5, 5));
-		controlsPanel.add(new JTextField("10"));
-		controlsPanel.add(new JButton("evolve"));
+		final JTextField evolveTextField = new JTextField("10");
+		controlsPanel.add(evolveTextField);
+		final JButton evolveButton = new JButton("evolve");
+		controlsPanel.add(evolveButton);
 
 		final JProgressBar progressBar = new JProgressBar(0, 100);
 		progressBar.setValue(0);
 		progressBar.setVisible(false);
 		frame.add(progressBar, BorderLayout.SOUTH);
-		ga.addIterationListener(new IterartionListener<OptimizableNeuralNetwork, Double>() {
-			@Override
-			public void update(GeneticAlgorithm<OptimizableNeuralNetwork, Double> environment) {
-				int iteration = environment.getIteration();
-				progressBar.setValue((iteration * 100) / 30);
-			}
-		});
 
 		frame.setLocationRelativeTo(null);
 		frame.setVisible(true);
+
+		evolveButton.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				evolveButton.setEnabled(false);
+				final int iterCount = Integer.parseInt(evolveTextField.getText());
+				progressBar.setVisible(true);
+				progressBar.setValue(0);
+
+				new Thread(new Runnable() {
+					@Override
+					public void run() {
+						IterartionListener<OptimizableNeuralNetwork, Double> listener =
+								new IterartionListener<OptimizableNeuralNetwork, Double>() {
+									@Override
+									public void update(GeneticAlgorithm<OptimizableNeuralNetwork, Double> environment) {
+										final int iteration = environment.getIteration();
+										SwingUtilities.invokeLater(new Runnable() {
+											@Override
+											public void run() {
+												progressBar.setValue((iteration * 100) / iterCount);
+											}
+										});
+									}
+								};
+
+						ga.addIterationListener(listener);
+						ga.evolve(iterCount);
+						ga.removeIterationListener(listener);
+
+						SwingUtilities.invokeLater(new Runnable() {
+							@Override
+							public void run() {
+								progressBar.setVisible(false);
+								evolveButton.setEnabled(true);
+							}
+						});
+
+						NeuralNetwork brain = ga.getBest();
+						for (Agent agent : environment.getAgents()) {
+							if (agent instanceof NeuralNetworkDrivenFish) {
+								((NeuralNetworkDrivenFish) agent).setBrain(brain);
+							}
+						}
+					}
+				}).start();
+			}
+		});
 
 		for (;;) {
 			Thread.sleep(50);
@@ -144,7 +183,7 @@ public class Test {
 							Food food = new Food(random.nextInt(w), random.nextInt(h));
 							env.addAgent(food);
 						}
-						TournamentListener tournamentListener = new TournamentListener();
+						EatenFoodObserver tournamentListener = new EatenFoodObserver();
 						env.addListener(tournamentListener);
 						for (int i = 0; i < 50; i++) {
 							env.timeStep();
@@ -173,105 +212,4 @@ public class Test {
 		ga.setParentChromosomesSurviveCount(1);
 		return ga;
 	}
-
-	public static class TournamentListener implements AgentsEnvironmentListener {
-
-		protected static final double minEatDistance = 5;
-
-		protected static final double maxFishesDistance = 5;
-
-		private Random random = new Random();
-
-		private double score = 0;
-
-		@Override
-		public void notify(AgentsEnvironment env) {
-			List<Food> eatenFood = this.getEatenFood(env);
-			this.score += eatenFood.size();
-
-			List<Fish> collidedFishes = this.getCollidedFishes(env);
-			this.score -= collidedFishes.size() * 0.5;
-
-			this.removeEatenAndCreateNewFood(env, eatenFood);
-		}
-
-		private List<Fish> getCollidedFishes(AgentsEnvironment env) {
-			List<Fish> collidedFishes = new LinkedList<Fish>();
-
-			List<Fish> allFishes = this.getFishes(env);
-			int fishesCount = allFishes.size();
-
-			for (int i = 0; i < (fishesCount - 1); i++) {
-				Fish firstFish = allFishes.get(i);
-				for (int j = i + 1; j < fishesCount; j++) {
-					Fish secondFish = allFishes.get(j);
-					double distanceToSecondFish = this.module(firstFish.getX() - secondFish.getX(), firstFish.getY() - secondFish.getY());
-					if (distanceToSecondFish < maxFishesDistance) {
-						collidedFishes.add(secondFish);
-						// this.score -= 0.5;
-					}
-				}
-			}
-			return collidedFishes;
-		}
-
-		private List<Food> getEatenFood(AgentsEnvironment env) {
-			List<Food> eatenFood = new LinkedList<Food>();
-
-			F: for (Food food : this.getFood(env)) {
-				for (Fish fish : this.getFishes(env)) {
-					double distanceToFood = this.module(food.getX() - fish.getX(), food.getY() - fish.getY());
-					if (distanceToFood < minEatDistance) {
-						// this.score++;
-						eatenFood.add(food);
-						continue F;
-					}
-				}
-			}
-			return eatenFood;
-		}
-
-		private void removeEatenAndCreateNewFood(AgentsEnvironment env, List<Food> eatenFood) {
-			for (Food food : eatenFood) {
-				env.removeAgent(food);
-
-				Food newFood = new Food(this.random.nextInt(env.getWidth()), this.random.nextInt(env.getHeight()));
-				env.addAgent(newFood);
-			}
-		}
-
-		private List<Food> getFood(AgentsEnvironment env) {
-			// TODO use Guava
-			List<Food> food = new ArrayList<Food>();
-			for (Agent agent : env.getAgents()) {
-				if (agent instanceof Food) {
-					food.add((Food) agent);
-				}
-			}
-			return food;
-		}
-
-		private List<Fish> getFishes(AgentsEnvironment env) {
-			// TODO use Guava
-			List<Fish> fishes = new ArrayList<Fish>();
-			for (Agent agent : env.getAgents()) {
-				if (agent instanceof Fish) {
-					fishes.add((Fish) agent);
-				}
-			}
-			return fishes;
-		}
-
-		public double getScore() {
-			if (this.score < 0) {
-				return 0;
-			}
-			return this.score;
-		}
-
-		protected double module(double vx1, double vy1) {
-			return Math.sqrt((vx1 * vx1) + (vy1 * vy1));
-		}
-	}
-
 }
