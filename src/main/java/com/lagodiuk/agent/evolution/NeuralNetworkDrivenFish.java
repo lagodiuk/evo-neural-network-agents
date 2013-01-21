@@ -24,18 +24,34 @@ public class NeuralNetworkDrivenFish extends Fish {
 
 	private static final double FOOD = 10;
 
-	private NeuralNetwork brain;
+	private volatile NeuralNetwork brain;
 
 	public NeuralNetworkDrivenFish(double x, double y, double angle) {
 		super(x, y, angle);
 	}
 
-	public void setBrain(NeuralNetwork brain) {
+	/**
+	 * Animating of fishes and evolving best brain - might be in different
+	 * threads <br/>
+	 * Synchronization prevents from race condition when trying to set new
+	 * brain, while method "interact" runs <br/>
+	 * <br/>
+	 * TODO Maybe consider to use non-blocking technique. But at the moment this
+	 * simplest solution doesn't cause any overheads
+	 */
+	public synchronized void setBrain(NeuralNetwork brain) {
 		this.brain = brain;
 	}
 
+	/**
+	 * Synchronization prevents from race condition when trying to set new
+	 * brain, while method "interact" runs <br/>
+	 * <br/>
+	 * TODO Maybe consider to use non-blocking technique. But at the moment this
+	 * simplest solution doesn't cause any overheads
+	 */
 	@Override
-	public void interact(AgentsEnvironment env) {
+	public synchronized void interact(AgentsEnvironment env) {
 		List<Double> nnInputs = this.createNnInputs(env);
 
 		this.activateNeuralNetwork(nnInputs);
