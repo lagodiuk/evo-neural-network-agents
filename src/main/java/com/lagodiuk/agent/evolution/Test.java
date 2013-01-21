@@ -1,6 +1,8 @@
 package com.lagodiuk.agent.evolution;
 
+import java.awt.BorderLayout;
 import java.awt.Graphics2D;
+import java.awt.GridLayout;
 import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
@@ -8,7 +10,11 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
 
+import javax.swing.JButton;
 import javax.swing.JFrame;
+import javax.swing.JPanel;
+import javax.swing.JProgressBar;
+import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 
 import com.lagodiuk.agent.Agent;
@@ -28,7 +34,10 @@ public class Test {
 	private static Random random = new Random();
 
 	public static void main(String[] args) throws Exception {
-		OptimizableNeuralNetwork bestBrain = evolveBestBrain(300);
+		final GeneticAlgorithm<OptimizableNeuralNetwork, Double> ga = initializeGeneticAlgorithm();
+		ga.iterate(300);
+
+		OptimizableNeuralNetwork bestBrain = ga.getBest();
 		System.out.println(bestBrain);
 
 		int environmentWidth = 600;
@@ -39,28 +48,44 @@ public class Test {
 		AgentsEnvironment environment = new AgentsEnvironment(environmentWidth, environmentHeight);
 		environment.addListener(new TournamentListener());
 
-		for (int i = 0; i < fishesCount; i++) {
-			NeuralNetworkDrivenFish fish =
-					new NeuralNetworkDrivenFish(random.nextInt(environmentWidth), random.nextInt(environmentHeight), random.nextDouble() * 2 * Math.PI);
-			fish.setBrain(bestBrain);
-			environment.addAgent(fish);
-		}
-
-		for (int i = 0; i < foodCount; i++) {
-			Food food = new Food(random.nextInt(environmentWidth), random.nextInt(environmentHeight));
-			environment.addAgent(food);
-		}
+		addFishes(environment, bestBrain, fishesCount);
+		addFood(environment, foodCount);
 
 		final BufferedImage bufferedImage = new BufferedImage(environmentWidth, environmentHeight, BufferedImage.TYPE_INT_RGB);
 
 		Graphics2D canvas = (Graphics2D) bufferedImage.getGraphics();
 		canvas.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
-		final JFrame frame = new JFrame("Testing fishes visualizator");
-		frame.setSize(environmentWidth + 100, environmentHeight + 100);
+		JFrame frame = new JFrame("Testing fishes visualizator");
+		frame.setSize(environmentWidth + 80, environmentHeight + 50);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		frame.setVisible(true);
+
+		frame.setLayout(new BorderLayout());
+
+		final JPanel environmentPanel = new JPanel();
+		environmentPanel.setSize(environmentWidth, environmentHeight);
+		frame.add(environmentPanel, BorderLayout.CENTER);
+
+		JPanel controlsPanel = new JPanel();
+		frame.add(controlsPanel, BorderLayout.EAST);
+		controlsPanel.setLayout(new GridLayout(11, 1, 5, 5));
+		controlsPanel.add(new JTextField("10"));
+		controlsPanel.add(new JButton("evolve"));
+
+		final JProgressBar progressBar = new JProgressBar(0, 100);
+		progressBar.setValue(0);
+		progressBar.setVisible(false);
+		frame.add(progressBar, BorderLayout.SOUTH);
+		ga.addIterationListener(new IterartionListener<OptimizableNeuralNetwork, Double>() {
+			@Override
+			public void update(GeneticAlgorithm<OptimizableNeuralNetwork, Double> environment) {
+				int iteration = environment.getIteration();
+				progressBar.setValue((iteration * 100) / 30);
+			}
+		});
+
 		frame.setLocationRelativeTo(null);
+		frame.setVisible(true);
 
 		for (;;) {
 			Thread.sleep(50);
@@ -69,13 +94,33 @@ public class Test {
 			SwingUtilities.invokeLater(new Runnable() {
 				@Override
 				public void run() {
-					frame.getGraphics().drawImage(bufferedImage, 30, 30, null);
+					environmentPanel.getGraphics().drawImage(bufferedImage, 0, 0, null);
 				}
 			});
 		}
 	}
 
-	private static OptimizableNeuralNetwork evolveBestBrain(int iterationsCount) {
+	private static void addFishes(AgentsEnvironment environment, OptimizableNeuralNetwork brain, int fishesCount) {
+		int environmentWidth = environment.getWidth();
+		int environmentHeight = environment.getHeight();
+		for (int i = 0; i < fishesCount; i++) {
+			NeuralNetworkDrivenFish fish =
+					new NeuralNetworkDrivenFish(random.nextInt(environmentWidth), random.nextInt(environmentHeight), random.nextDouble() * 2 * Math.PI);
+			fish.setBrain(brain);
+			environment.addAgent(fish);
+		}
+	}
+
+	private static void addFood(AgentsEnvironment environment, int foodCount) {
+		int environmentWidth = environment.getWidth();
+		int environmentHeight = environment.getHeight();
+		for (int i = 0; i < foodCount; i++) {
+			Food food = new Food(random.nextInt(environmentWidth), random.nextInt(environmentHeight));
+			environment.addAgent(food);
+		}
+	}
+
+	private static GeneticAlgorithm<OptimizableNeuralNetwork, Double> initializeGeneticAlgorithm() {
 		Population<OptimizableNeuralNetwork> brains = new Population<OptimizableNeuralNetwork>();
 		int populationSize = 5;
 		for (int i = 0; i < populationSize; i++) {
@@ -126,11 +171,7 @@ public class Test {
 		});
 
 		ga.setParentChromosomesSurviveCount(1);
-
-		ga.iterate(iterationsCount);
-
-		OptimizableNeuralNetwork bestBrain = ga.getBest();
-		return bestBrain;
+		return ga;
 	}
 
 	public static class TournamentListener implements AgentsEnvironmentListener {
