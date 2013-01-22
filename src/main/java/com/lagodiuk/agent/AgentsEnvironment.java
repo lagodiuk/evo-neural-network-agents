@@ -32,9 +32,7 @@ public class AgentsEnvironment {
 	}
 
 	public void timeStep() {
-		// to avoid concurrent modification exception
-		Iterable<Agent> agentsWrap = new LinkedList<Agent>(this.agents);
-		for (Agent agent : agentsWrap) {
+		for (Agent agent : this.getAgents()) {
 			agent.interact(this);
 		}
 		for (AgentsEnvironmentObserver l : this.listeners) {
@@ -43,7 +41,8 @@ public class AgentsEnvironment {
 	}
 
 	public List<Agent> getAgents() {
-		return this.agents;
+		// to avoid concurrent modification exception
+		return new LinkedList<Agent>(this.agents);
 	}
 
 	public void addAgent(Agent agent) {

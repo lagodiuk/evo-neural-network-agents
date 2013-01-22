@@ -71,7 +71,7 @@ public class EatenFoodObserver implements AgentsEnvironmentObserver {
 		return eatenFood;
 	}
 
-	private void removeEatenAndCreateNewFood(AgentsEnvironment env, List<Food> eatenFood) {
+	protected void removeEatenAndCreateNewFood(AgentsEnvironment env, List<Food> eatenFood) {
 		for (Food food : eatenFood) {
 			env.removeAgent(food);
 

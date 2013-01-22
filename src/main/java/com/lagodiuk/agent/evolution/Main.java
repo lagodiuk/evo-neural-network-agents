@@ -6,7 +6,10 @@ import java.awt.GridLayout;
 import java.awt.RenderingHints;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
+import java.util.List;
 import java.util.Random;
 
 import javax.swing.JButton;
@@ -39,6 +42,8 @@ public class Main {
 
 	private static int populationNumber = 0;
 
+	private static volatile boolean play = true;
+
 	public static void main(String[] args) throws Exception {
 		ga = initializeGeneticAlgorithm();
 
@@ -48,7 +53,15 @@ public class Main {
 		int foodCount = 10;
 
 		environment = new AgentsEnvironment(environmentWidth, environmentHeight);
-		environment.addListener(new EatenFoodObserver());
+		environment.addListener(new EatenFoodObserver() {
+			@Override
+			protected void removeEatenAndCreateNewFood(AgentsEnvironment env, List<Food> eatenFood) {
+				// don't create new food
+				for (Food f : eatenFood) {
+					env.removeAgent(f);
+				}
+			}
+		});
 
 		NeuralNetwork brain = ga.getBest();
 		addFishes(environment, brain, fishesCount);
@@ -80,6 +93,9 @@ public class Main {
 		final JButton evolveButton = new JButton("evolve");
 		controlsPanel.add(evolveButton);
 
+		final JButton playPauseButton = new JButton("pause");
+		controlsPanel.add(playPauseButton);
+
 		final JProgressBar progressBar = new JProgressBar(0, 100);
 		progressBar.setValue(0);
 		progressBar.setVisible(false);
@@ -88,9 +104,6 @@ public class Main {
 		final JLabel populationNumberLabel = new JLabel("Population: " + populationNumber, SwingConstants.CENTER);
 		frame.add(populationNumberLabel, BorderLayout.NORTH);
 
-		frame.setLocationRelativeTo(null);
-		frame.setVisible(true);
-
 		evolveButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
@@ -98,12 +111,14 @@ public class Main {
 				evolveTextField.setEnabled(false);
 				progressBar.setVisible(true);
 				progressBar.setValue(0);
+				environmentPanel.getGraphics().drawImage(bufferedImage, 0, 0, null);
 
 				String iterCountStr = evolveTextField.getText();
 				if (!iterCountStr.matches("\\d+")) {
 					evolveButton.setEnabled(true);
 					evolveTextField.setEnabled(true);
 					progressBar.setVisible(false);
+					environmentPanel.getGraphics().drawImage(bufferedImage, 0, 0, null);
 					return;
 				}
 
@@ -152,9 +167,37 @@ public class Main {
 			}
 		});
 
+		playPauseButton.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent event) {
+				play = !play;
+				if (play) {
+					playPauseButton.setText("pause");
+				} else {
+					playPauseButton.setText("play");
+				}
+			}
+		});
+
+		environmentPanel.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent click) {
+				double x = click.getX();
+				double y = click.getY();
+
+				Food food = new Food(x, y);
+				environment.addAgent(food);
+			}
+		});
+
+		frame.setLocationRelativeTo(null);
+		frame.setVisible(true);
+
 		for (;;) {
 			Thread.sleep(50);
-			environment.timeStep();
+			if (play) {
+				environment.timeStep();
+			}
 			Visualizator.paintEnvironment(canvas, environment);
 			SwingUtilities.invokeLater(new Runnable() {
 				@Override
