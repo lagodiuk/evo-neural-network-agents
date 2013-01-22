@@ -11,9 +11,11 @@ import java.util.Random;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
 import javax.swing.JTextField;
+import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 
 import com.lagodiuk.agent.Agent;
@@ -31,20 +33,25 @@ public class Main {
 
 	private static Random random = new Random();
 
-	public static void main(String[] args) throws Exception {
-		final GeneticAlgorithm<OptimizableNeuralNetwork, Double> ga = initializeGeneticAlgorithm();
+	private static GeneticAlgorithm<OptimizableNeuralNetwork, Double> ga;
 
-		OptimizableNeuralNetwork bestBrain = ga.getBest();
+	private static AgentsEnvironment environment;
+
+	private static int populationNumber = 0;
+
+	public static void main(String[] args) throws Exception {
+		ga = initializeGeneticAlgorithm();
 
 		int environmentWidth = 600;
 		int environmentHeight = 400;
 		int fishesCount = 15;
 		int foodCount = 10;
 
-		final AgentsEnvironment environment = new AgentsEnvironment(environmentWidth, environmentHeight);
+		environment = new AgentsEnvironment(environmentWidth, environmentHeight);
 		environment.addListener(new EatenFoodObserver());
 
-		addFishes(environment, bestBrain, fishesCount);
+		NeuralNetwork brain = ga.getBest();
+		addFishes(environment, brain, fishesCount);
 		addFood(environment, foodCount);
 
 		final BufferedImage bufferedImage = new BufferedImage(environmentWidth, environmentHeight, BufferedImage.TYPE_INT_RGB);
@@ -54,6 +61,7 @@ public class Main {
 
 		JFrame frame = new JFrame("Testing fishes visualizator");
 		frame.setSize(environmentWidth + 80, environmentHeight + 50);
+		frame.setResizable(false);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
 		frame.setLayout(new BorderLayout());
@@ -77,6 +85,9 @@ public class Main {
 		progressBar.setVisible(false);
 		frame.add(progressBar, BorderLayout.SOUTH);
 
+		final JLabel populationNumberLabel = new JLabel("Population: " + populationNumber, SwingConstants.CENTER);
+		frame.add(populationNumberLabel, BorderLayout.NORTH);
+
 		frame.setLocationRelativeTo(null);
 		frame.setVisible(true);
 
@@ -88,7 +99,15 @@ public class Main {
 				progressBar.setVisible(true);
 				progressBar.setValue(0);
 
-				final int iterCount = Integer.parseInt(evolveTextField.getText());
+				String iterCountStr = evolveTextField.getText();
+				if (!iterCountStr.matches("\\d+")) {
+					evolveButton.setEnabled(true);
+					evolveTextField.setEnabled(true);
+					progressBar.setVisible(false);
+					return;
+				}
+
+				final int iterCount = Integer.parseInt(iterCountStr);
 
 				new Thread(new Runnable() {
 					@Override
@@ -110,6 +129,7 @@ public class Main {
 						ga.addIterationListener(listener);
 						ga.evolve(iterCount);
 						ga.removeIterationListener(listener);
+						populationNumber += iterCount;
 
 						SwingUtilities.invokeLater(new Runnable() {
 							@Override
@@ -117,6 +137,7 @@ public class Main {
 								progressBar.setVisible(false);
 								evolveButton.setEnabled(true);
 								evolveTextField.setEnabled(true);
+								populationNumberLabel.setText("Population: " + populationNumber);
 							}
 						});
 
@@ -144,7 +165,7 @@ public class Main {
 		}
 	}
 
-	private static void addFishes(AgentsEnvironment environment, OptimizableNeuralNetwork brain, int fishesCount) {
+	private static void addFishes(AgentsEnvironment environment, NeuralNetwork brain, int fishesCount) {
 		int environmentWidth = environment.getWidth();
 		int environmentHeight = environment.getHeight();
 		for (int i = 0; i < fishesCount; i++) {
