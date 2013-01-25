@@ -9,6 +9,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
+import java.io.FileOutputStream;
 import java.util.Random;
 
 import javax.swing.JButton;
@@ -42,6 +43,8 @@ public class Main {
 	private static int populationNumber = 0;
 
 	private static volatile boolean play = true;
+
+	private static String brainXmlPath = "brain.xml";
 
 	public static void main(String[] args) throws Exception {
 		ga = initializeGeneticAlgorithm();
@@ -145,7 +148,9 @@ public class Main {
 						}
 
 						try {
-							NeuralNetwork.marsall(brain, System.out);
+							FileOutputStream out = new FileOutputStream(brainXmlPath);
+							NeuralNetwork.marsall(brain, out);
+							out.close();
 						} catch (Exception e) {
 							e.printStackTrace();
 						}

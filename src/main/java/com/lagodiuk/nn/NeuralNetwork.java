@@ -145,6 +145,7 @@ public class NeuralNetwork implements Cloneable {
 		Marshaller marshaller = context.createMarshaller();
 		marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
 		marshaller.marshal(nn, out);
+		out.flush();
 	}
 
 	public static NeuralNetwork unmarsall(InputStream in) throws Exception {
