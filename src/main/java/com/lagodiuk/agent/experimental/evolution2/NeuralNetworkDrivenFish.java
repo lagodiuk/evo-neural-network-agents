@@ -9,7 +9,6 @@ import com.lagodiuk.agent.Fish;
 import com.lagodiuk.agent.Food;
 import com.lagodiuk.nn.NeuralNetwork;
 import com.lagodiuk.nn.ThresholdFunction;
-import com.lagodiuk.nn.ThresholdFunctions;
 import com.lagodiuk.nn.genetic.OptimizableNeuralNetwork;
 
 public class NeuralNetworkDrivenFish extends Fish {
@@ -266,11 +265,11 @@ public class NeuralNetworkDrivenFish extends Fish {
 	public static OptimizableNeuralNetwork randomNeuralNetworkBrain() {
 		OptimizableNeuralNetwork nn = new OptimizableNeuralNetwork(18);
 		for (int i = 0; i < 18; i++) {
-			ThresholdFunction f = ThresholdFunctions.getRandomFunction();
+			ThresholdFunction f = ThresholdFunction.getRandomFunction();
 			nn.setNeuronFunction(i, f, f.getDefaultParams());
 		}
 		for (int i = 0; i < 9; i++) {
-			nn.setNeuronFunction(i, ThresholdFunctions.LINEAR, ThresholdFunctions.LINEAR.getDefaultParams());
+			nn.setNeuronFunction(i, ThresholdFunction.LINEAR, ThresholdFunction.LINEAR.getDefaultParams());
 		}
 		for (int i = 0; i < 9; i++) {
 			for (int j = 9; j < 18; j++) {
