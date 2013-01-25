@@ -11,7 +11,6 @@ import com.lagodiuk.ga.Chromosome;
 import com.lagodiuk.nn.NeuralNetwork;
 import com.lagodiuk.nn.Neuron;
 import com.lagodiuk.nn.ThresholdFunction;
-import com.lagodiuk.nn.ThresholdFunctions;
 
 public class OptimizableNeuralNetwork extends NeuralNetwork implements Chromosome<OptimizableNeuralNetwork>, Cloneable {
 
@@ -238,7 +237,7 @@ public class OptimizableNeuralNetwork extends NeuralNetwork implements Chromosom
 				}
 			}
 			Neuron n = neurons.get(i);
-			ThresholdFunction f = ThresholdFunctions.getRandomFunction();
+			ThresholdFunction f = ThresholdFunction.getRandomFunction();
 			n.setFunctionAndParams(f, f.getDefaultParams());
 			used.add(i);
 		}

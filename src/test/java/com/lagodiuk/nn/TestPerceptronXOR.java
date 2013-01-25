@@ -165,10 +165,10 @@ public class TestPerceptronXOR {
 	private NeuralNetwork makePerceptronXOR() {
 		NeuralNetwork nn = new NeuralNetwork(6);
 
-		nn.setNeuronFunction(0, ThresholdFunctions.LINEAR, ThresholdFunctions.LINEAR.getDefaultParams());
-		nn.setNeuronFunction(1, ThresholdFunctions.LINEAR, ThresholdFunctions.LINEAR.getDefaultParams());
+		nn.setNeuronFunction(0, ThresholdFunction.LINEAR, ThresholdFunction.LINEAR.getDefaultParams());
+		nn.setNeuronFunction(1, ThresholdFunction.LINEAR, ThresholdFunction.LINEAR.getDefaultParams());
 		for (int i = 2; i < 6; i++) {
-			nn.setNeuronFunction(i, ThresholdFunctions.SIGN, ThresholdFunctions.SIGN.getDefaultParams());
+			nn.setNeuronFunction(i, ThresholdFunction.SIGN, ThresholdFunction.SIGN.getDefaultParams());
 		}
 
 		nn.addLink(0, 2, -1);

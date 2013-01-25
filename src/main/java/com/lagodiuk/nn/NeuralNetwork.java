@@ -34,7 +34,7 @@ public class NeuralNetwork implements Cloneable {
 	public NeuralNetwork(int numberOfNeurons) {
 		this.neurons = new ArrayList<Neuron>(numberOfNeurons);
 		for (int i = 0; i < numberOfNeurons; i++) {
-			this.neurons.add(new Neuron(ThresholdFunctions.SIGN, ThresholdFunctions.SIGN.getDefaultParams()));
+			this.neurons.add(new Neuron(ThresholdFunction.SIGN, ThresholdFunction.SIGN.getDefaultParams()));
 		}
 	}
 
@@ -185,15 +185,17 @@ public class NeuralNetwork implements Cloneable {
 		String s2 = new String(data2);
 
 		System.out.println(s1.equals(s2));
+
+		System.out.println(s1);
 	}
 
 	private static NeuralNetwork makePerceptronXOR() {
 		NeuralNetwork nn = new NeuralNetwork(6);
 
-		nn.setNeuronFunction(0, ThresholdFunctions.LINEAR, ThresholdFunctions.LINEAR.getDefaultParams());
-		nn.setNeuronFunction(1, ThresholdFunctions.LINEAR, ThresholdFunctions.LINEAR.getDefaultParams());
+		nn.setNeuronFunction(0, ThresholdFunction.LINEAR, ThresholdFunction.LINEAR.getDefaultParams());
+		nn.setNeuronFunction(1, ThresholdFunction.LINEAR, ThresholdFunction.LINEAR.getDefaultParams());
 		for (int i = 2; i < 6; i++) {
-			nn.setNeuronFunction(i, ThresholdFunctions.SIGN, ThresholdFunctions.SIGN.getDefaultParams());
+			nn.setNeuronFunction(i, ThresholdFunction.SIGN, ThresholdFunction.SIGN.getDefaultParams());
 		}
 
 		nn.addLink(0, 2, -1);

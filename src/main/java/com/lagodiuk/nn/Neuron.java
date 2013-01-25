@@ -7,9 +7,6 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElementWrapper;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
-import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
-
-import com.lagodiuk.nn.serializing.xml.ThresholdFunctionAdapter;
 
 @XmlRootElement(name = "neuron")
 public class Neuron implements Cloneable {
@@ -20,7 +17,7 @@ public class Neuron implements Cloneable {
 	@XmlTransient
 	private double afterActivationSignal;
 
-	@XmlJavaTypeAdapter(value = ThresholdFunctionAdapter.class)
+	@XmlElement(name = "thresholdFunction")
 	private ThresholdFunction thresholdFunction;
 
 	@XmlElementWrapper(name = "parameters")

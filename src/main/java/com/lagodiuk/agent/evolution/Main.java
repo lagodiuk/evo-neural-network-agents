@@ -52,16 +52,7 @@ public class Main {
 		int foodCount = 10;
 
 		environment = new AgentsEnvironment(environmentWidth, environmentHeight);
-		environment.addListener(new EatenFoodObserver() {
-			// @Override
-			// protected void removeEatenAndCreateNewFood(AgentsEnvironment env,
-			// List<Food> eatenFood) {
-			// // don't create new food
-			// for (Food f : eatenFood) {
-			// env.removeAgent(f);
-			// }
-			// }
-		});
+		environment.addListener(new EatenFoodObserver());
 
 		NeuralNetwork brain = ga.getBest();
 		addFishes(environment, brain, fishesCount);

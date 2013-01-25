@@ -2,12 +2,11 @@ package com.lagodiuk.nn.genetic.demo;
 
 import java.util.Random;
 
-import com.lagodiuk.ga.GeneticAlgorithm;
 import com.lagodiuk.ga.Fitness;
+import com.lagodiuk.ga.GeneticAlgorithm;
 import com.lagodiuk.ga.IterartionListener;
 import com.lagodiuk.ga.Population;
 import com.lagodiuk.nn.ThresholdFunction;
-import com.lagodiuk.nn.ThresholdFunctions;
 import com.lagodiuk.nn.genetic.OptimizableNeuralNetwork;
 
 public class Launcher {
@@ -85,11 +84,11 @@ public class Launcher {
 	private static OptimizableNeuralNetwork initilNeuralNetwork() {
 		OptimizableNeuralNetwork nn = new OptimizableNeuralNetwork(6);
 		for (int i = 0; i < 6; i++) {
-			ThresholdFunction f = ThresholdFunctions.getRandomFunction();
+			ThresholdFunction f = ThresholdFunction.getRandomFunction();
 			nn.setNeuronFunction(i, f, f.getDefaultParams());
 		}
-		nn.setNeuronFunction(0, ThresholdFunctions.LINEAR, ThresholdFunctions.LINEAR.getDefaultParams());
-		nn.setNeuronFunction(1, ThresholdFunctions.LINEAR, ThresholdFunctions.LINEAR.getDefaultParams());
+		nn.setNeuronFunction(0, ThresholdFunction.LINEAR, ThresholdFunction.LINEAR.getDefaultParams());
+		nn.setNeuronFunction(1, ThresholdFunction.LINEAR, ThresholdFunction.LINEAR.getDefaultParams());
 
 		Random rnd = new Random();
 		nn.addLink(0, 2, getRandomWeight(rnd));
