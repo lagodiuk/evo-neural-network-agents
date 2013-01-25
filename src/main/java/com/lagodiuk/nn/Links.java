@@ -7,6 +7,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
@@ -17,7 +18,7 @@ public class Links implements Cloneable {
 	@XmlJavaTypeAdapter(value = MapAdapter.class)
 	private Map<Integer, Map<Integer, Double>> links = new LinkedHashMap<Integer, Map<Integer, Double>>();
 
-	@XmlTransient
+	@XmlElement(name = "linksCount")
 	private int totalLinksCount = 0;
 
 	public Collection<Integer> getReceivers(int activatorNeuronNumber) {

@@ -1,7 +1,6 @@
 package com.lagodiuk.nn;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
@@ -140,78 +139,19 @@ public class NeuralNetwork implements Cloneable {
 		return "NeuralNetwork [neurons=" + this.neurons + ", links=" + this.neuronsLinks + ", activationIterations=" + this.activationIterations + "]";
 	}
 
-	public void marsall(OutputStream out) throws Exception {
+	public static void marsall(NeuralNetwork nn, OutputStream out) throws Exception {
 		// TODO refactoring
 		JAXBContext context = JAXBContext.newInstance(NeuralNetwork.class);
 		Marshaller marshaller = context.createMarshaller();
 		marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
-		marshaller.marshal(this, out);
+		marshaller.marshal(nn, out);
 	}
 
-	public static void main(String[] args) throws Exception {
-		NeuralNetwork nn = makePerceptronXOR();
-
-		// nn.setNeuronFunction(0, new ThresholdFunction() {
-		// @Override
-		// public List<Double> getDefaultParams() {
-		// return new LinkedList<Double>();
-		// }
-		//
-		// @Override
-		// public double calculate(double value, List<Double> params) {
-		// return 0;
-		// }
-		// }, new LinkedList<Double>());
-
-		ByteArrayOutputStream baos = new ByteArrayOutputStream();
-
+	public static NeuralNetwork unmarsall(InputStream in) throws Exception {
+		// TODO refactoring
 		JAXBContext context = JAXBContext.newInstance(NeuralNetwork.class);
-		Marshaller marshaller = context.createMarshaller();
-		marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
-		marshaller.marshal(nn, baos);
-
-		baos.flush();
-		byte[] data = baos.toByteArray();
-
-		ByteArrayInputStream bais = new ByteArrayInputStream(data);
 		Unmarshaller unmarshaller = context.createUnmarshaller();
-		NeuralNetwork nn2 = (NeuralNetwork) unmarshaller.unmarshal(bais);
-
-		ByteArrayOutputStream baos2 = new ByteArrayOutputStream();
-		marshaller.marshal(nn2, baos2);
-		byte[] data2 = baos2.toByteArray();
-
-		String s1 = new String(data);
-		String s2 = new String(data2);
-
-		System.out.println(s1.equals(s2));
-
-		System.out.println(s1);
-	}
-
-	private static NeuralNetwork makePerceptronXOR() {
-		NeuralNetwork nn = new NeuralNetwork(6);
-
-		nn.setNeuronFunction(0, ThresholdFunction.LINEAR, ThresholdFunction.LINEAR.getDefaultParams());
-		nn.setNeuronFunction(1, ThresholdFunction.LINEAR, ThresholdFunction.LINEAR.getDefaultParams());
-		for (int i = 2; i < 6; i++) {
-			nn.setNeuronFunction(i, ThresholdFunction.SIGN, ThresholdFunction.SIGN.getDefaultParams());
-		}
-
-		nn.addLink(0, 2, -1);
-		nn.addLink(0, 3, 1);
-		nn.addLink(0, 4, 1);
-
-		nn.addLink(1, 2, 1);
-		nn.addLink(1, 3, -1);
-		nn.addLink(1, 4, 1);
-
-		nn.addLink(2, 5, 2);
-
-		nn.addLink(3, 5, 2);
-
-		nn.addLink(4, 5, -1);
-
-		return nn;
+		NeuralNetwork unmarshalledNn = (NeuralNetwork) unmarshaller.unmarshal(in);
+		return unmarshalledNn;
 	}
 }

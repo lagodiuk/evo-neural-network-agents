@@ -145,7 +145,7 @@ public class Main {
 						}
 
 						try {
-							brain.marsall(System.out);
+							NeuralNetwork.marsall(brain, System.out);
 						} catch (Exception e) {
 							e.printStackTrace();
 						}
