@@ -121,7 +121,7 @@ public class Main {
 				new Thread(new Runnable() {
 					@Override
 					public void run() {
-						IterartionListener<OptimizableNeuralNetwork, Double> listener =
+						IterartionListener<OptimizableNeuralNetwork, Double> progressListener =
 								new IterartionListener<OptimizableNeuralNetwork, Double>() {
 									@Override
 									public void update(GeneticAlgorithm<OptimizableNeuralNetwork, Double> environment) {
@@ -135,9 +135,9 @@ public class Main {
 									}
 								};
 
-						ga.addIterationListener(listener);
+						ga.addIterationListener(progressListener);
 						ga.evolve(iterCount);
-						ga.removeIterationListener(listener);
+						ga.removeIterationListener(progressListener);
 						populationNumber += iterCount;
 
 						NeuralNetwork brain = ga.getBest();
@@ -237,34 +237,7 @@ public class Main {
 			brains.addChromosome(NeuralNetworkDrivenFish.randomNeuralNetworkBrain());
 		}
 
-		Fitness<OptimizableNeuralNetwork, Double> fit =
-				new Fitness<OptimizableNeuralNetwork, Double>() {
-					@Override
-					public Double calculate(OptimizableNeuralNetwork chromosome) {
-						int w = 200;
-						int h = 200;
-						AgentsEnvironment env = new AgentsEnvironment(w, h);
-						for (int i = 0; i < 10; i++) {
-							NeuralNetworkDrivenFish fish =
-									new NeuralNetworkDrivenFish(random.nextInt(w), random.nextInt(h), 2 * Math.PI * random.nextDouble());
-							fish.setBrain(chromosome);
-							env.addAgent(fish);
-						}
-						for (int i = 0; i < 5; i++) {
-							Food food = new Food(random.nextInt(w), random.nextInt(h));
-							env.addAgent(food);
-						}
-						EatenFoodObserver tournamentListener = new EatenFoodObserver();
-						env.addListener(tournamentListener);
-						for (int i = 0; i < 50; i++) {
-							env.timeStep();
-						}
-
-						double score = tournamentListener.getScore();
-
-						return 1.0 / score;
-					}
-				};
+		Fitness<OptimizableNeuralNetwork, Double> fit = new TournamentEnvironmentFitness();
 
 		GeneticAlgorithm<OptimizableNeuralNetwork, Double> ga =
 				new GeneticAlgorithm<OptimizableNeuralNetwork, Double>(brains, fit);
