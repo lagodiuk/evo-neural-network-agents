@@ -9,7 +9,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
-import java.util.List;
+import java.io.FileOutputStream;
 import java.util.Random;
 
 import javax.swing.JButton;
@@ -44,6 +44,8 @@ public class Main {
 
 	private static volatile boolean play = true;
 
+	private static String brainXmlPath = "brain.xml";
+
 	public static void main(String[] args) throws Exception {
 		ga = initializeGeneticAlgorithm();
 
@@ -53,15 +55,7 @@ public class Main {
 		int foodCount = 10;
 
 		environment = new AgentsEnvironment(environmentWidth, environmentHeight);
-		environment.addListener(new EatenFoodObserver() {
-			@Override
-			protected void removeEatenAndCreateNewFood(AgentsEnvironment env, List<Food> eatenFood) {
-				// don't create new food
-				for (Food f : eatenFood) {
-					env.removeAgent(f);
-				}
-			}
-		});
+		environment.addListener(new EatenFoodObserver());
 
 		NeuralNetwork brain = ga.getBest();
 		addFishes(environment, brain, fishesCount);
@@ -127,7 +121,7 @@ public class Main {
 				new Thread(new Runnable() {
 					@Override
 					public void run() {
-						IterartionListener<OptimizableNeuralNetwork, Double> listener =
+						IterartionListener<OptimizableNeuralNetwork, Double> progressListener =
 								new IterartionListener<OptimizableNeuralNetwork, Double>() {
 									@Override
 									public void update(GeneticAlgorithm<OptimizableNeuralNetwork, Double> environment) {
@@ -141,10 +135,25 @@ public class Main {
 									}
 								};
 
-						ga.addIterationListener(listener);
+						ga.addIterationListener(progressListener);
 						ga.evolve(iterCount);
-						ga.removeIterationListener(listener);
+						ga.removeIterationListener(progressListener);
 						populationNumber += iterCount;
+
+						NeuralNetwork brain = ga.getBest();
+						for (Agent agent : environment.getAgents()) {
+							if (agent instanceof NeuralNetworkDrivenFish) {
+								((NeuralNetworkDrivenFish) agent).setBrain(brain);
+							}
+						}
+
+						try {
+							FileOutputStream out = new FileOutputStream(brainXmlPath);
+							NeuralNetwork.marsall(brain, out);
+							out.close();
+						} catch (Exception e) {
+							e.printStackTrace();
+						}
 
 						SwingUtilities.invokeLater(new Runnable() {
 							@Override
@@ -155,13 +164,6 @@ public class Main {
 								populationNumberLabel.setText("Population: " + populationNumber);
 							}
 						});
-
-						NeuralNetwork brain = ga.getBest();
-						for (Agent agent : environment.getAgents()) {
-							if (agent instanceof NeuralNetworkDrivenFish) {
-								((NeuralNetworkDrivenFish) agent).setBrain(brain);
-							}
-						}
 					}
 				}).start();
 			}
@@ -235,34 +237,7 @@ public class Main {
 			brains.addChromosome(NeuralNetworkDrivenFish.randomNeuralNetworkBrain());
 		}
 
-		Fitness<OptimizableNeuralNetwork, Double> fit =
-				new Fitness<OptimizableNeuralNetwork, Double>() {
-					@Override
-					public Double calculate(OptimizableNeuralNetwork chromosome) {
-						int w = 200;
-						int h = 200;
-						AgentsEnvironment env = new AgentsEnvironment(w, h);
-						for (int i = 0; i < 10; i++) {
-							NeuralNetworkDrivenFish fish =
-									new NeuralNetworkDrivenFish(random.nextInt(w), random.nextInt(h), 2 * Math.PI * random.nextDouble());
-							fish.setBrain(chromosome);
-							env.addAgent(fish);
-						}
-						for (int i = 0; i < 5; i++) {
-							Food food = new Food(random.nextInt(w), random.nextInt(h));
-							env.addAgent(food);
-						}
-						EatenFoodObserver tournamentListener = new EatenFoodObserver();
-						env.addListener(tournamentListener);
-						for (int i = 0; i < 50; i++) {
-							env.timeStep();
-						}
-
-						double score = tournamentListener.getScore();
-
-						return 1.0 / score;
-					}
-				};
+		Fitness<OptimizableNeuralNetwork, Double> fit = new TournamentEnvironmentFitness();
 
 		GeneticAlgorithm<OptimizableNeuralNetwork, Double> ga =
 				new GeneticAlgorithm<OptimizableNeuralNetwork, Double>(brains, fit);

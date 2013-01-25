@@ -7,19 +7,27 @@ import java.util.List;
 import java.util.Random;
 import java.util.Set;
 
+import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlTransient;
+
 import com.lagodiuk.ga.Chromosome;
 import com.lagodiuk.nn.NeuralNetwork;
 import com.lagodiuk.nn.Neuron;
 import com.lagodiuk.nn.ThresholdFunction;
-import com.lagodiuk.nn.ThresholdFunctions;
 
+@XmlRootElement
 public class OptimizableNeuralNetwork extends NeuralNetwork implements Chromosome<OptimizableNeuralNetwork>, Cloneable {
 
 	private static double weightsMutationInterval = 1;
 
 	private static double neuronParamsMutationInterval = 1;
 
+	@XmlTransient
 	private Random random = new Random();
+
+	public OptimizableNeuralNetwork() {
+		// Required by JAXB
+	}
 
 	public OptimizableNeuralNetwork(int numberOfNeurons) {
 		super(numberOfNeurons);
@@ -32,19 +40,19 @@ public class OptimizableNeuralNetwork extends NeuralNetwork implements Chromosom
 
 		switch (this.random.nextInt(4)) {
 			case 0: {
-				List<Double> thisWeights = thisClone.links.getAllWeights();
-				List<Double> anotherWeights = anotherClone.links.getAllWeights();
+				List<Double> thisWeights = thisClone.neuronsLinks.getAllWeights();
+				List<Double> anotherWeights = anotherClone.neuronsLinks.getAllWeights();
 				this.twoPointsWeightsCrossover(thisWeights, anotherWeights);
-				thisClone.links.setAllWeights(thisWeights);
-				anotherClone.links.setAllWeights(anotherWeights);
+				thisClone.neuronsLinks.setAllWeights(thisWeights);
+				anotherClone.neuronsLinks.setAllWeights(anotherWeights);
 			}
 				break;
 			case 1: {
-				List<Double> thisWeights = thisClone.links.getAllWeights();
-				List<Double> anotherWeights = anotherClone.links.getAllWeights();
+				List<Double> thisWeights = thisClone.neuronsLinks.getAllWeights();
+				List<Double> anotherWeights = anotherClone.neuronsLinks.getAllWeights();
 				this.uniformelyDistributedWeightsCrossover(thisWeights, anotherWeights);
-				thisClone.links.setAllWeights(thisWeights);
-				anotherClone.links.setAllWeights(anotherWeights);
+				thisClone.neuronsLinks.setAllWeights(thisWeights);
+				anotherClone.neuronsLinks.setAllWeights(anotherWeights);
 			}
 				break;
 			case 2: {
@@ -147,9 +155,9 @@ public class OptimizableNeuralNetwork extends NeuralNetwork implements Chromosom
 
 		switch (this.random.nextInt(4)) {
 			case 0: {
-				List<Double> weights = mutated.links.getAllWeights();
+				List<Double> weights = mutated.neuronsLinks.getAllWeights();
 				this.mutateWeights(weights);
-				mutated.links.setAllWeights(weights);
+				mutated.neuronsLinks.setAllWeights(weights);
 			}
 				break;
 			case 1: {
@@ -161,9 +169,9 @@ public class OptimizableNeuralNetwork extends NeuralNetwork implements Chromosom
 			}
 				break;
 			case 3: {
-				List<Double> weights = mutated.links.getAllWeights();
+				List<Double> weights = mutated.neuronsLinks.getAllWeights();
 				this.shuffleWeightsOnSubinterval(weights);
-				mutated.links.setAllWeights(weights);
+				mutated.neuronsLinks.setAllWeights(weights);
 			}
 				break;
 		}
@@ -238,7 +246,7 @@ public class OptimizableNeuralNetwork extends NeuralNetwork implements Chromosom
 				}
 			}
 			Neuron n = neurons.get(i);
-			ThresholdFunction f = ThresholdFunctions.getRandomFunction();
+			ThresholdFunction f = ThresholdFunction.getRandomFunction();
 			n.setFunctionAndParams(f, f.getDefaultParams());
 			used.add(i);
 		}
@@ -265,7 +273,7 @@ public class OptimizableNeuralNetwork extends NeuralNetwork implements Chromosom
 	@Override
 	public OptimizableNeuralNetwork clone() {
 		OptimizableNeuralNetwork clone = new OptimizableNeuralNetwork(this.neurons.size());
-		clone.links = this.links.clone();
+		clone.neuronsLinks = this.neuronsLinks.clone();
 		clone.activationIterations = this.activationIterations;
 		clone.neurons = new ArrayList<Neuron>(this.neurons.size());
 		for (Neuron neuron : this.neurons) {
