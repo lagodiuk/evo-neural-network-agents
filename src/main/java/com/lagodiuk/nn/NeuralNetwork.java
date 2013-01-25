@@ -1,15 +1,35 @@
 package com.lagodiuk.nn;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.Marshaller;
+import javax.xml.bind.Unmarshaller;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlElementWrapper;
+import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlTransient;
+
+@XmlRootElement
 public class NeuralNetwork implements Cloneable {
 
+	@XmlElementWrapper(name = "neurons")
+	@XmlElement(name = "neuron")
 	protected List<Neuron> neurons;
 
-	protected Links links = new Links();
+	@XmlElement
+	protected Links neuronsLinks = new Links();
 
+	@XmlElement
 	protected int activationIterations = 1;
+
+	public NeuralNetwork() {
+		// Required by JAXB
+	}
 
 	public NeuralNetwork(int numberOfNeurons) {
 		this.neurons = new ArrayList<Neuron>(numberOfNeurons);
@@ -27,7 +47,7 @@ public class NeuralNetwork implements Cloneable {
 	}
 
 	public void addLink(int activatorNeuronNumber, int receiverNeuronNumber, double weight) {
-		this.links.addWeight(activatorNeuronNumber, receiverNeuronNumber, weight);
+		this.neuronsLinks.addWeight(activatorNeuronNumber, receiverNeuronNumber, weight);
 	}
 
 	public void putSignalToNeuron(int neuronIndx, double signalValue) {
@@ -55,27 +75,29 @@ public class NeuralNetwork implements Cloneable {
 				activator.activate();
 				double activatorSignal = activator.getAfterActivationSignal();
 
-				for (Integer receiverNum : this.links.getReceivers(i)) {
+				for (Integer receiverNum : this.neuronsLinks.getReceivers(i)) {
 					if (receiverNum >= this.neurons.size()) {
 						throw new RuntimeException("Neural network has " + this.neurons.size()
 								+ " neurons. But there was trying to accsess neuron with index " + receiverNum);
 					}
 					Neuron receiver = this.neurons.get(receiverNum);
-					double weight = this.links.getWeight(i, receiverNum);
+					double weight = this.neuronsLinks.getWeight(i, receiverNum);
 					receiver.addSignal(activatorSignal * weight);
 				}
 			}
 		}
 	}
 
+	@XmlTransient
 	public List<Double> getWeightsOfLinks() {
-		return this.links.getAllWeights();
+		return this.neuronsLinks.getAllWeights();
 	}
 
 	public void setWeightsOfLinks(List<Double> weights) {
-		this.links.setAllWeights(weights);
+		this.neuronsLinks.setAllWeights(weights);
 	}
 
+	@XmlTransient
 	public List<Neuron> getNeurons() {
 		List<Neuron> ret = new ArrayList<Neuron>(this.neurons.size());
 		for (Neuron n : this.neurons) {
@@ -92,6 +114,7 @@ public class NeuralNetwork implements Cloneable {
 		this.neurons = newNeurons;
 	}
 
+	@XmlTransient
 	public int getActivationIterations() {
 		return this.activationIterations;
 	}
@@ -103,7 +126,7 @@ public class NeuralNetwork implements Cloneable {
 	@Override
 	public NeuralNetwork clone() {
 		NeuralNetwork clone = new NeuralNetwork(this.neurons.size());
-		clone.links = this.links.clone();
+		clone.neuronsLinks = this.neuronsLinks.clone();
 		clone.activationIterations = this.activationIterations;
 		clone.neurons = new ArrayList<Neuron>(this.neurons.size());
 		for (Neuron neuron : this.neurons) {
@@ -114,6 +137,79 @@ public class NeuralNetwork implements Cloneable {
 
 	@Override
 	public String toString() {
-		return "NeuralNetwork [neurons=" + this.neurons + ", links=" + this.links + ", activationIterations=" + this.activationIterations + "]";
+		return "NeuralNetwork [neurons=" + this.neurons + ", links=" + this.neuronsLinks + ", activationIterations=" + this.activationIterations + "]";
+	}
+
+	public void marsall(OutputStream out) throws Exception {
+		// TODO refactoring
+		JAXBContext context = JAXBContext.newInstance(NeuralNetwork.class);
+		Marshaller marshaller = context.createMarshaller();
+		marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
+		marshaller.marshal(this, out);
+	}
+
+	public static void main(String[] args) throws Exception {
+		NeuralNetwork nn = makePerceptronXOR();
+
+		// nn.setNeuronFunction(0, new ThresholdFunction() {
+		// @Override
+		// public List<Double> getDefaultParams() {
+		// return new LinkedList<Double>();
+		// }
+		//
+		// @Override
+		// public double calculate(double value, List<Double> params) {
+		// return 0;
+		// }
+		// }, new LinkedList<Double>());
+
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+
+		JAXBContext context = JAXBContext.newInstance(NeuralNetwork.class);
+		Marshaller marshaller = context.createMarshaller();
+		marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
+		marshaller.marshal(nn, baos);
+
+		baos.flush();
+		byte[] data = baos.toByteArray();
+
+		ByteArrayInputStream bais = new ByteArrayInputStream(data);
+		Unmarshaller unmarshaller = context.createUnmarshaller();
+		NeuralNetwork nn2 = (NeuralNetwork) unmarshaller.unmarshal(bais);
+
+		ByteArrayOutputStream baos2 = new ByteArrayOutputStream();
+		marshaller.marshal(nn2, baos2);
+		byte[] data2 = baos2.toByteArray();
+
+		String s1 = new String(data);
+		String s2 = new String(data2);
+
+		System.out.println(s1.equals(s2));
+	}
+
+	private static NeuralNetwork makePerceptronXOR() {
+		NeuralNetwork nn = new NeuralNetwork(6);
+
+		nn.setNeuronFunction(0, ThresholdFunctions.LINEAR, ThresholdFunctions.LINEAR.getDefaultParams());
+		nn.setNeuronFunction(1, ThresholdFunctions.LINEAR, ThresholdFunctions.LINEAR.getDefaultParams());
+		for (int i = 2; i < 6; i++) {
+			nn.setNeuronFunction(i, ThresholdFunctions.SIGN, ThresholdFunctions.SIGN.getDefaultParams());
+		}
+
+		nn.addLink(0, 2, -1);
+		nn.addLink(0, 3, 1);
+		nn.addLink(0, 4, 1);
+
+		nn.addLink(1, 2, 1);
+		nn.addLink(1, 3, -1);
+		nn.addLink(1, 4, 1);
+
+		nn.addLink(2, 5, 2);
+
+		nn.addLink(3, 5, 2);
+
+		nn.addLink(4, 5, -1);
+
+		return nn;
 	}
 }

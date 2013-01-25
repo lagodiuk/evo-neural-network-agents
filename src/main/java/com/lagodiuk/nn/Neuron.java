@@ -3,69 +3,87 @@ package com.lagodiuk.nn;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlElementWrapper;
+import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlTransient;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+
+import com.lagodiuk.nn.serializing.xml.ThresholdFunctionAdapter;
+
+@XmlRootElement(name = "neuron")
 public class Neuron implements Cloneable {
 
-    private double inputSignal;
+	@XmlTransient
+	private double inputSignal;
 
-    private double afterActivationSignal;
+	@XmlTransient
+	private double afterActivationSignal;
 
-    private ThresholdFunction thresholdFunction;
+	@XmlJavaTypeAdapter(value = ThresholdFunctionAdapter.class)
+	private ThresholdFunction thresholdFunction;
 
-    private List<Double> params;
+	@XmlElementWrapper(name = "parameters")
+	@XmlElement(name = "param")
+	private List<Double> params;
 
-    public Neuron( ThresholdFunction function, List<Double> params ) {
-        this.setFunctionAndParams( function, params );
-    }
+	public Neuron() {
+		// Required by JAXB
+	}
 
-    public void setFunctionAndParams( ThresholdFunction function, List<Double> params ) {
-        if ( params.size() != function.getDefaultParams().size() ) {
-            throw new IllegalArgumentException( "Function needs " + function.getDefaultParams().size()
-                    + " parameters. But params count is " + params.size() );
-        }
-        this.thresholdFunction = function;
-        this.params = params;
-    }
+	public Neuron(ThresholdFunction function, List<Double> params) {
+		this.setFunctionAndParams(function, params);
+	}
 
-    public void addSignal( double value ) {
-        this.inputSignal += value;
-    }
+	public void setFunctionAndParams(ThresholdFunction function, List<Double> params) {
+		if (params.size() != function.getDefaultParams().size()) {
+			throw new IllegalArgumentException("Function needs " + function.getDefaultParams().size()
+					+ " parameters. But params count is " + params.size());
+		}
+		this.thresholdFunction = function;
+		this.params = params;
+	}
 
-    public void activate() {
-        this.afterActivationSignal = this.thresholdFunction.calculate( this.inputSignal, this.params );
-        this.inputSignal = 0;
-    }
+	public void addSignal(double value) {
+		this.inputSignal += value;
+	}
 
-    public double getAfterActivationSignal() {
-        return this.afterActivationSignal;
-    }
+	public void activate() {
+		this.afterActivationSignal = this.thresholdFunction.calculate(this.inputSignal, this.params);
+		this.inputSignal = 0;
+	}
 
-    public ThresholdFunction getFunction() {
-        return this.thresholdFunction;
-    }
+	public double getAfterActivationSignal() {
+		return this.afterActivationSignal;
+	}
 
-    public List<Double> getParams() {
-        List<Double> ret = new ArrayList<Double>( this.params.size() );
-        for ( Double d : this.params ) {
-            ret.add( d );
-        }
-        return ret;
-    }
+	public ThresholdFunction getFunction() {
+		return this.thresholdFunction;
+	}
 
-    @Override
-    public Neuron clone() {
-        List<Double> cloneParams = new ArrayList<Double>( this.params.size() );
-        for ( double d : this.params ) {
-            cloneParams.add( d );
-        }
-        Neuron clone = new Neuron( this.thresholdFunction, cloneParams );
-        clone.inputSignal = 0;
-        clone.afterActivationSignal = 0;
-        return clone;
-    }
+	public List<Double> getParams() {
+		List<Double> ret = new ArrayList<Double>(this.params.size());
+		for (Double d : this.params) {
+			ret.add(d);
+		}
+		return ret;
+	}
 
-    @Override
-    public String toString() {
-        return "Neuron [thresholdFunction=" + this.thresholdFunction + ", params=" + this.params + "]";
-    }
+	@Override
+	public Neuron clone() {
+		List<Double> cloneParams = new ArrayList<Double>(this.params.size());
+		for (double d : this.params) {
+			cloneParams.add(d);
+		}
+		Neuron clone = new Neuron(this.thresholdFunction, cloneParams);
+		clone.inputSignal = 0;
+		clone.afterActivationSignal = 0;
+		return clone;
+	}
+
+	@Override
+	public String toString() {
+		return "Neuron [thresholdFunction=" + this.thresholdFunction + ", params=" + this.params + "]";
+	}
 
 }

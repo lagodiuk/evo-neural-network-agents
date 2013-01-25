@@ -9,7 +9,6 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
-import java.util.List;
 import java.util.Random;
 
 import javax.swing.JButton;
@@ -54,13 +53,14 @@ public class Main {
 
 		environment = new AgentsEnvironment(environmentWidth, environmentHeight);
 		environment.addListener(new EatenFoodObserver() {
-			@Override
-			protected void removeEatenAndCreateNewFood(AgentsEnvironment env, List<Food> eatenFood) {
-				// don't create new food
-				for (Food f : eatenFood) {
-					env.removeAgent(f);
-				}
-			}
+			// @Override
+			// protected void removeEatenAndCreateNewFood(AgentsEnvironment env,
+			// List<Food> eatenFood) {
+			// // don't create new food
+			// for (Food f : eatenFood) {
+			// env.removeAgent(f);
+			// }
+			// }
 		});
 
 		NeuralNetwork brain = ga.getBest();
@@ -146,6 +146,19 @@ public class Main {
 						ga.removeIterationListener(listener);
 						populationNumber += iterCount;
 
+						NeuralNetwork brain = ga.getBest();
+						for (Agent agent : environment.getAgents()) {
+							if (agent instanceof NeuralNetworkDrivenFish) {
+								((NeuralNetworkDrivenFish) agent).setBrain(brain);
+							}
+						}
+
+						try {
+							brain.marsall(System.out);
+						} catch (Exception e) {
+							e.printStackTrace();
+						}
+
 						SwingUtilities.invokeLater(new Runnable() {
 							@Override
 							public void run() {
@@ -155,13 +168,6 @@ public class Main {
 								populationNumberLabel.setText("Population: " + populationNumber);
 							}
 						});
-
-						NeuralNetwork brain = ga.getBest();
-						for (Agent agent : environment.getAgents()) {
-							if (agent instanceof NeuralNetworkDrivenFish) {
-								((NeuralNetworkDrivenFish) agent).setBrain(brain);
-							}
-						}
 					}
 				}).start();
 			}
