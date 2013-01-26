@@ -13,6 +13,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.util.Random;
+import java.util.prefs.Preferences;
 
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
@@ -36,6 +37,8 @@ import com.lagodiuk.nn.NeuralNetwork;
 import com.lagodiuk.nn.genetic.OptimizableNeuralNetwork;
 
 public class Main {
+
+	private static final String PREFS_KEY_BRAINS_DIRECTORY = "BrainsDirectory";
 
 	private static Random random = new Random();
 
@@ -74,6 +77,8 @@ public class Main {
 	private static Graphics2D displayEnvironmentCanvas;
 
 	private static JFileChooser fileChooser;
+
+	private static Preferences prefs;
 
 	public static void main(String[] args) throws Exception {
 		// TODO maybe, add ability to define these parameters as environment
@@ -157,7 +162,9 @@ public class Main {
 		populationInfoLabel = new JLabel("Population: " + populationNumber, SwingConstants.CENTER);
 		appFrame.add(populationInfoLabel, BorderLayout.NORTH);
 
-		fileChooser = new JFileChooser(new File(""));
+		prefs = Preferences.userNodeForPackage(Main.class);
+		String brainsDirPath = prefs.get(PREFS_KEY_BRAINS_DIRECTORY, "");
+		fileChooser = new JFileChooser(new File(brainsDirPath));
 	}
 
 	private static void mainEnvironmentLoop() throws InterruptedException {
@@ -187,6 +194,8 @@ public class Main {
 				if (returnVal == JFileChooser.APPROVE_OPTION) {
 					try {
 						File brainFile = fileChooser.getSelectedFile();
+						prefs.put(PREFS_KEY_BRAINS_DIRECTORY, brainFile.getParent());
+
 						FileInputStream in = new FileInputStream(brainFile);
 
 						NeuralNetwork newBrain = NeuralNetwork.unmarsall(in);
@@ -201,6 +210,8 @@ public class Main {
 						OptimizableNeuralNetwork optimizableNewBrain = new OptimizableNeuralNetwork(newBrain);
 						initializeGeneticAlgorithm(ga.getPopulation().getSize(), ga.getParentChromosomesSurviveCount(), optimizableNewBrain);
 
+						populationNumber = 0;
+						populationInfoLabel.setText("Population: " + populationNumber);
 					} catch (Exception e) {
 						e.printStackTrace();
 					}
