@@ -50,8 +50,6 @@ public class Main {
 
 	private static volatile boolean play = true;
 
-	private static String brainXmlPath = "brain.xml";
-
 	// UI
 
 	private static JFrame appFrame;
@@ -67,6 +65,8 @@ public class Main {
 	private static JButton playPauseButton;
 
 	private static JButton loadBrainButton;
+
+	private static JButton saveBrainButton;
 
 	private static JProgressBar progressBar;
 
@@ -114,6 +114,8 @@ public class Main {
 
 		initializeLoadBrainButtonFunctionality();
 
+		initializeSaveBrainButtonFunctionality();
+
 		displayUI();
 
 		mainEnvironmentLoop();
@@ -147,6 +149,9 @@ public class Main {
 
 		evolveButton = new JButton("evolve");
 		controlsPanel.add(evolveButton);
+
+		saveBrainButton = new JButton("save brain");
+		controlsPanel.add(saveBrainButton);
 
 		loadBrainButton = new JButton("load brain");
 		controlsPanel.add(loadBrainButton);
@@ -190,7 +195,6 @@ public class Main {
 				disableControls();
 
 				int returnVal = fileChooser.showOpenDialog(appFrame);
-
 				if (returnVal == JFileChooser.APPROVE_OPTION) {
 					try {
 						File brainFile = fileChooser.getSelectedFile();
@@ -208,10 +212,43 @@ public class Main {
 						}
 
 						OptimizableNeuralNetwork optimizableNewBrain = new OptimizableNeuralNetwork(newBrain);
-						initializeGeneticAlgorithm(ga.getPopulation().getSize(), ga.getParentChromosomesSurviveCount(), optimizableNewBrain);
+						int populationSize = ga.getPopulation().getSize();
+						int parentalChromosomesSurviveCount = ga.getParentChromosomesSurviveCount();
+						initializeGeneticAlgorithm(populationSize, parentalChromosomesSurviveCount, optimizableNewBrain);
 
+						// reset population number counter
 						populationNumber = 0;
 						populationInfoLabel.setText("Population: " + populationNumber);
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
+				}
+
+				enableControls();
+			}
+		});
+	}
+
+	private static void initializeSaveBrainButtonFunctionality() {
+		saveBrainButton.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				disableControls();
+
+				int returnVal = fileChooser.showSaveDialog(appFrame);
+				if (returnVal == JFileChooser.APPROVE_OPTION) {
+					try {
+						File brainFile = fileChooser.getSelectedFile();
+						prefs.put(PREFS_KEY_BRAINS_DIRECTORY, brainFile.getParent());
+
+						FileOutputStream out = new FileOutputStream(brainFile);
+
+						// current brain is the best evolved neural network
+						// from genetic algorithm
+						NeuralNetwork brain = ga.getBest();
+						NeuralNetwork.marsall(brain, out);
+
+						out.close();
 					} catch (Exception e) {
 						e.printStackTrace();
 					}
@@ -271,14 +308,6 @@ public class Main {
 							}
 						}
 
-						try {
-							FileOutputStream out = new FileOutputStream(brainXmlPath);
-							NeuralNetwork.marsall(brain, out);
-							out.close();
-						} catch (Exception e) {
-							e.printStackTrace();
-						}
-
 						SwingUtilities.invokeLater(new Runnable() {
 							@Override
 							public void run() {
@@ -297,12 +326,14 @@ public class Main {
 		evolveButton.setEnabled(false);
 		evolveTextField.setEnabled(false);
 		loadBrainButton.setEnabled(false);
+		saveBrainButton.setEnabled(false);
 	}
 
 	private static void enableControls() {
 		evolveButton.setEnabled(true);
 		evolveTextField.setEnabled(true);
 		loadBrainButton.setEnabled(true);
+		saveBrainButton.setEnabled(true);
 	}
 
 	private static void initializeAddingFoodFunctionality() {
