@@ -122,6 +122,10 @@ public class NeuralNetwork implements Cloneable {
 		this.activationIterations = activationIterations;
 	}
 
+	public Links getNeuronsLinks() {
+		return this.neuronsLinks.clone();
+	}
+
 	@Override
 	public NeuralNetwork clone() {
 		NeuralNetwork clone = new NeuralNetwork(this.neurons.size());

@@ -13,22 +13,31 @@ final class TournamentEnvironmentFitness implements Fitness<OptimizableNeuralNet
 
 	@Override
 	public Double calculate(OptimizableNeuralNetwork chromosome) {
-		int w = 200;
-		int h = 200;
-		AgentsEnvironment env = new AgentsEnvironment(w, h);
-		for (int i = 0; i < 10; i++) {
+		// TODO maybe, its better to initialize these parameters in constructor
+		int width = 200;
+		int height = 200;
+		int fishesCount = 10;
+		int foodCount = 5;
+		int environmentIterations = 50;
+
+		AgentsEnvironment env = new AgentsEnvironment(width, height);
+
+		for (int i = 0; i < fishesCount; i++) {
 			NeuralNetworkDrivenFish fish =
-					new NeuralNetworkDrivenFish(random.nextInt(w), random.nextInt(h), 2 * Math.PI * random.nextDouble());
+					new NeuralNetworkDrivenFish(random.nextInt(width), random.nextInt(height), 2 * Math.PI * random.nextDouble());
 			fish.setBrain(chromosome);
 			env.addAgent(fish);
 		}
-		for (int i = 0; i < 5; i++) {
-			Food food = new Food(random.nextInt(w), random.nextInt(h));
+
+		for (int i = 0; i < foodCount; i++) {
+			Food food = new Food(random.nextInt(width), random.nextInt(height));
 			env.addAgent(food);
 		}
+
 		EatenFoodObserver tournamentListener = new EatenFoodObserver();
 		env.addListener(tournamentListener);
-		for (int i = 0; i < 50; i++) {
+
+		for (int i = 0; i < environmentIterations; i++) {
 			env.timeStep();
 		}
 

@@ -9,10 +9,13 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.util.Random;
 
 import javax.swing.JButton;
+import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -46,13 +49,43 @@ public class Main {
 
 	private static String brainXmlPath = "brain.xml";
 
-	public static void main(String[] args) throws Exception {
-		ga = initializeGeneticAlgorithm();
+	// UI
 
+	private static JFrame appFrame;
+
+	private static JPanel environmentPanel;
+
+	private static JPanel controlsPanel;
+
+	private static JTextField evolveTextField;
+
+	private static JButton evolveButton;
+
+	private static JButton playPauseButton;
+
+	private static JButton loadBrainButton;
+
+	private static JProgressBar progressBar;
+
+	private static JLabel populationInfoLabel;
+
+	private static BufferedImage displayEnvironmentBufferedImage;
+
+	private static Graphics2D displayEnvironmentCanvas;
+
+	private static JFileChooser fileChooser;
+
+	public static void main(String[] args) throws Exception {
+		// TODO maybe, add ability to define these parameters as environment
+		// constants
+		int gaPopulationSize = 5;
+		int parentalChromosomesSurviveCount = 1;
 		int environmentWidth = 600;
 		int environmentHeight = 400;
 		int fishesCount = 15;
 		int foodCount = 10;
+
+		initializeGeneticAlgorithm(gaPopulationSize, parentalChromosomesSurviveCount);
 
 		environment = new AgentsEnvironment(environmentWidth, environmentHeight);
 		environment.addListener(new EatenFoodObserver());
@@ -61,58 +94,138 @@ public class Main {
 		addFishes(environment, brain, fishesCount);
 		addFood(environment, foodCount);
 
-		final BufferedImage bufferedImage = new BufferedImage(environmentWidth, environmentHeight, BufferedImage.TYPE_INT_RGB);
+		displayEnvironmentBufferedImage = new BufferedImage(environmentWidth, environmentHeight, BufferedImage.TYPE_INT_RGB);
 
-		Graphics2D canvas = (Graphics2D) bufferedImage.getGraphics();
-		canvas.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+		displayEnvironmentCanvas = (Graphics2D) displayEnvironmentBufferedImage.getGraphics();
+		displayEnvironmentCanvas.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
-		JFrame frame = new JFrame("Testing fishes visualizator");
-		frame.setSize(environmentWidth + 80, environmentHeight + 50);
-		frame.setResizable(false);
-		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		initializeUI(environmentWidth, environmentHeight);
 
-		frame.setLayout(new BorderLayout());
+		initializeEvolveButtonFunctionality();
 
-		final JPanel environmentPanel = new JPanel();
+		initializePlayPauseButtonFunctionality();
+
+		initializeAddingFoodFunctionality();
+
+		initializeLoadBrainButtonFunctionality();
+
+		displayUI();
+
+		mainEnvironmentLoop();
+	}
+
+	private static void displayUI() {
+		// put application frame to the center of screen
+		appFrame.setLocationRelativeTo(null);
+
+		appFrame.setVisible(true);
+	}
+
+	private static void initializeUI(int environmentWidth, int environmentHeight) {
+		appFrame = new JFrame("Testing fishes visualizator");
+		appFrame.setSize(environmentWidth + 80, environmentHeight + 50);
+		appFrame.setResizable(false);
+		appFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
+		appFrame.setLayout(new BorderLayout());
+
+		environmentPanel = new JPanel();
 		environmentPanel.setSize(environmentWidth, environmentHeight);
-		frame.add(environmentPanel, BorderLayout.CENTER);
+		appFrame.add(environmentPanel, BorderLayout.CENTER);
 
-		JPanel controlsPanel = new JPanel();
-		frame.add(controlsPanel, BorderLayout.EAST);
+		controlsPanel = new JPanel();
+		appFrame.add(controlsPanel, BorderLayout.EAST);
 		controlsPanel.setLayout(new GridLayout(11, 1, 5, 5));
 
-		final JTextField evolveTextField = new JTextField("10");
+		evolveTextField = new JTextField("10");
 		controlsPanel.add(evolveTextField);
 
-		final JButton evolveButton = new JButton("evolve");
+		evolveButton = new JButton("evolve");
 		controlsPanel.add(evolveButton);
 
-		final JButton playPauseButton = new JButton("pause");
+		loadBrainButton = new JButton("load brain");
+		controlsPanel.add(loadBrainButton);
+
+		playPauseButton = new JButton("pause");
 		controlsPanel.add(playPauseButton);
 
-		final JProgressBar progressBar = new JProgressBar(0, 100);
+		progressBar = new JProgressBar(0, 100);
 		progressBar.setValue(0);
 		progressBar.setVisible(false);
-		frame.add(progressBar, BorderLayout.SOUTH);
+		appFrame.add(progressBar, BorderLayout.SOUTH);
 
-		final JLabel populationNumberLabel = new JLabel("Population: " + populationNumber, SwingConstants.CENTER);
-		frame.add(populationNumberLabel, BorderLayout.NORTH);
+		populationInfoLabel = new JLabel("Population: " + populationNumber, SwingConstants.CENTER);
+		appFrame.add(populationInfoLabel, BorderLayout.NORTH);
 
+		fileChooser = new JFileChooser(new File(""));
+	}
+
+	private static void mainEnvironmentLoop() throws InterruptedException {
+		for (;;) {
+			Thread.sleep(50);
+			if (play) {
+				environment.timeStep();
+			}
+			Visualizator.paintEnvironment(displayEnvironmentCanvas, environment);
+			SwingUtilities.invokeLater(new Runnable() {
+				@Override
+				public void run() {
+					environmentPanel.getGraphics().drawImage(displayEnvironmentBufferedImage, 0, 0, null);
+				}
+			});
+		}
+	}
+
+	private static void initializeLoadBrainButtonFunctionality() {
+		loadBrainButton.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				disableControls();
+
+				int returnVal = fileChooser.showOpenDialog(appFrame);
+
+				if (returnVal == JFileChooser.APPROVE_OPTION) {
+					try {
+						File brainFile = fileChooser.getSelectedFile();
+						FileInputStream in = new FileInputStream(brainFile);
+
+						NeuralNetwork newBrain = NeuralNetwork.unmarsall(in);
+						in.close();
+
+						for (Agent agent : environment.getAgents()) {
+							if (agent instanceof NeuralNetworkDrivenFish) {
+								((NeuralNetworkDrivenFish) agent).setBrain(newBrain);
+							}
+						}
+
+						OptimizableNeuralNetwork optimizableNewBrain = new OptimizableNeuralNetwork(newBrain);
+						initializeGeneticAlgorithm(ga.getPopulation().getSize(), ga.getParentChromosomesSurviveCount(), optimizableNewBrain);
+
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
+				}
+
+				enableControls();
+			}
+		});
+	}
+
+	private static void initializeEvolveButtonFunctionality() {
 		evolveButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
-				evolveButton.setEnabled(false);
-				evolveTextField.setEnabled(false);
+				disableControls();
 				progressBar.setVisible(true);
 				progressBar.setValue(0);
-				environmentPanel.getGraphics().drawImage(bufferedImage, 0, 0, null);
+				environmentPanel.getGraphics().drawImage(displayEnvironmentBufferedImage, 0, 0, null);
 
 				String iterCountStr = evolveTextField.getText();
 				if (!iterCountStr.matches("\\d+")) {
 					evolveButton.setEnabled(true);
 					evolveTextField.setEnabled(true);
 					progressBar.setVisible(false);
-					environmentPanel.getGraphics().drawImage(bufferedImage, 0, 0, null);
+					environmentPanel.getGraphics().drawImage(displayEnvironmentBufferedImage, 0, 0, null);
 					return;
 				}
 
@@ -159,16 +272,42 @@ public class Main {
 							@Override
 							public void run() {
 								progressBar.setVisible(false);
-								evolveButton.setEnabled(true);
-								evolveTextField.setEnabled(true);
-								populationNumberLabel.setText("Population: " + populationNumber);
+								populationInfoLabel.setText("Population: " + populationNumber);
+								enableControls();
 							}
 						});
 					}
 				}).start();
 			}
 		});
+	}
 
+	private static void disableControls() {
+		evolveButton.setEnabled(false);
+		evolveTextField.setEnabled(false);
+		loadBrainButton.setEnabled(false);
+	}
+
+	private static void enableControls() {
+		evolveButton.setEnabled(true);
+		evolveTextField.setEnabled(true);
+		loadBrainButton.setEnabled(true);
+	}
+
+	private static void initializeAddingFoodFunctionality() {
+		environmentPanel.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent click) {
+				double x = click.getX();
+				double y = click.getY();
+
+				Food food = new Food(x, y);
+				environment.addAgent(food);
+			}
+		});
+	}
+
+	private static void initializePlayPauseButtonFunctionality() {
 		playPauseButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent event) {
@@ -180,34 +319,6 @@ public class Main {
 				}
 			}
 		});
-
-		environmentPanel.addMouseListener(new MouseAdapter() {
-			@Override
-			public void mouseClicked(MouseEvent click) {
-				double x = click.getX();
-				double y = click.getY();
-
-				Food food = new Food(x, y);
-				environment.addAgent(food);
-			}
-		});
-
-		frame.setLocationRelativeTo(null);
-		frame.setVisible(true);
-
-		for (;;) {
-			Thread.sleep(50);
-			if (play) {
-				environment.timeStep();
-			}
-			Visualizator.paintEnvironment(canvas, environment);
-			SwingUtilities.invokeLater(new Runnable() {
-				@Override
-				public void run() {
-					environmentPanel.getGraphics().drawImage(bufferedImage, 0, 0, null);
-				}
-			});
-		}
 	}
 
 	private static void addFishes(AgentsEnvironment environment, NeuralNetwork brain, int fishesCount) {
@@ -230,18 +341,51 @@ public class Main {
 		}
 	}
 
-	private static GeneticAlgorithm<OptimizableNeuralNetwork, Double> initializeGeneticAlgorithm() {
+	// TODO refactor
+	private static void initializeGeneticAlgorithm(
+			int populationSize,
+			int parentalChromosomesSurviveCount) {
 		Population<OptimizableNeuralNetwork> brains = new Population<OptimizableNeuralNetwork>();
-		int populationSize = 5;
+
 		for (int i = 0; i < populationSize; i++) {
 			brains.addChromosome(NeuralNetworkDrivenFish.randomNeuralNetworkBrain());
 		}
 
 		Fitness<OptimizableNeuralNetwork, Double> fit = new TournamentEnvironmentFitness();
 
-		GeneticAlgorithm<OptimizableNeuralNetwork, Double> ga =
-				new GeneticAlgorithm<OptimizableNeuralNetwork, Double>(brains, fit);
+		ga = new GeneticAlgorithm<OptimizableNeuralNetwork, Double>(brains, fit);
 
+		addSystemOutIterationListener(ga);
+
+		ga.setParentChromosomesSurviveCount(parentalChromosomesSurviveCount);
+	}
+
+	// TODO refactor
+	private static void initializeGeneticAlgorithm(
+			int populationSize,
+			int parentalChromosomesSurviveCount,
+			OptimizableNeuralNetwork baseNeuralNetwork) {
+		Population<OptimizableNeuralNetwork> brains = new Population<OptimizableNeuralNetwork>();
+
+		brains.addChromosome(baseNeuralNetwork);
+		for (int i = 0; i < (populationSize - 1); i++) {
+			if (random.nextDouble() < 0.5) {
+				brains.addChromosome(baseNeuralNetwork.mutate());
+			} else {
+				brains.addChromosome(NeuralNetworkDrivenFish.randomNeuralNetworkBrain());
+			}
+		}
+
+		Fitness<OptimizableNeuralNetwork, Double> fit = new TournamentEnvironmentFitness();
+
+		ga = new GeneticAlgorithm<OptimizableNeuralNetwork, Double>(brains, fit);
+
+		addSystemOutIterationListener(ga);
+
+		ga.setParentChromosomesSurviveCount(parentalChromosomesSurviveCount);
+	}
+
+	private static void addSystemOutIterationListener(GeneticAlgorithm<OptimizableNeuralNetwork, Double> ga) {
 		ga.addIterationListener(new IterartionListener<OptimizableNeuralNetwork, Double>() {
 			@Override
 			public void update(GeneticAlgorithm<OptimizableNeuralNetwork, Double> ga) {
@@ -252,8 +396,5 @@ public class Main {
 				ga.clearCache();
 			}
 		});
-
-		ga.setParentChromosomesSurviveCount(1);
-		return ga;
 	}
 }

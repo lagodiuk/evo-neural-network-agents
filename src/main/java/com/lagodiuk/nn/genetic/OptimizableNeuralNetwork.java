@@ -33,6 +33,12 @@ public class OptimizableNeuralNetwork extends NeuralNetwork implements Chromosom
 		super(numberOfNeurons);
 	}
 
+	public OptimizableNeuralNetwork(NeuralNetwork nn) {
+		this.activationIterations = nn.getActivationIterations();
+		this.neurons = nn.getNeurons();
+		this.neuronsLinks = nn.getNeuronsLinks();
+	}
+
 	@Override
 	public List<OptimizableNeuralNetwork> crossover(OptimizableNeuralNetwork anotherChromosome) {
 		OptimizableNeuralNetwork anotherClone = anotherChromosome.clone();
@@ -281,5 +287,4 @@ public class OptimizableNeuralNetwork extends NeuralNetwork implements Chromosom
 		}
 		return clone;
 	}
-
 }
