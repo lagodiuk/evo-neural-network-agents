@@ -314,6 +314,7 @@ public class Main {
 								progressBar.setVisible(false);
 								populationInfoLabel.setText("Population: " + populationNumber);
 								enableControls();
+								evolveButton.requestFocusInWindow();
 							}
 						});
 					}
