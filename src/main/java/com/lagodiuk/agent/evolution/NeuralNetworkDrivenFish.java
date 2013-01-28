@@ -66,25 +66,6 @@ public class NeuralNetworkDrivenFish extends Fish {
 		this.setSpeed(newSpeed);
 
 		this.move();
-
-		// avoid moving outside of environment
-		double newX = this.getX();
-		double newY = this.getY();
-		if (newX < 0) {
-			newX = env.getWidth() - 1;
-		}
-		if (newY < 0) {
-			newY = env.getHeight() - 1;
-		}
-		if (newX > env.getWidth()) {
-			newX = 1;
-		}
-		if (newY > env.getHeight()) {
-			newY = 1;
-		}
-
-		this.setX(newX);
-		this.setY(newY);
 	}
 
 	private void activateNeuralNetwork(List<Double> nnInputs) {

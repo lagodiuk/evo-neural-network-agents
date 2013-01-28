@@ -34,10 +34,34 @@ public class AgentsEnvironment {
 	public void timeStep() {
 		for (Agent agent : this.getAgents()) {
 			agent.interact(this);
+			this.avoidMovingOutsideOfBounds(agent);
 		}
 		for (AgentsEnvironmentObserver l : this.listeners) {
 			l.notify(this);
 		}
+	}
+
+	/**
+	 * avoid moving outside of environment
+	 */
+	private void avoidMovingOutsideOfBounds(Agent agent) {
+		double newX = agent.getX();
+		double newY = agent.getY();
+		if (newX < 0) {
+			newX = this.width - 1;
+		}
+		if (newY < 0) {
+			newY = this.height - 1;
+		}
+		if (newX > this.width) {
+			newX = 1;
+		}
+		if (newY > this.height) {
+			newY = 1;
+		}
+
+		agent.setX(newX);
+		agent.setY(newY);
 	}
 
 	public List<Agent> getAgents() {
