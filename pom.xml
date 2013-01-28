@@ -44,7 +44,7 @@
 					</archive>
 					<outputDirectory>${project.basedir}/bin</outputDirectory>
 					<appendAssemblyId>false</appendAssemblyId>
-					<finalName>nn_ga_agents</finalName>
+					<finalName>simulator</finalName>
 				</configuration>
 				<executions>
 					<execution>
