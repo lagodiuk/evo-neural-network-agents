@@ -17,7 +17,7 @@ public class MovingFood extends Food {
 		this.move(env);
 	}
 
-	public void move(AgentsEnvironment env) {
+	protected void move(AgentsEnvironment env) {
 		double rx = -Math.sin(this.angle);
 		double ry = Math.cos(this.angle);
 		this.setX(this.getX() + (rx * this.speed));
