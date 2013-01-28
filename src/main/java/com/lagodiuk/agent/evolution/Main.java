@@ -92,17 +92,9 @@ public class Main {
 
 		initializeGeneticAlgorithm(gaPopulationSize, parentalChromosomesSurviveCount);
 
-		environment = new AgentsEnvironment(environmentWidth, environmentHeight);
-		environment.addListener(new EatenFoodObserver());
+		initializeEnvironment(environmentWidth, environmentHeight, fishesCount, foodCount);
 
-		NeuralNetwork brain = ga.getBest();
-		addFishes(environment, brain, fishesCount);
-		addFood(environment, foodCount);
-
-		displayEnvironmentBufferedImage = new BufferedImage(environmentWidth, environmentHeight, BufferedImage.TYPE_INT_RGB);
-
-		displayEnvironmentCanvas = (Graphics2D) displayEnvironmentBufferedImage.getGraphics();
-		displayEnvironmentCanvas.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+		initializeCanvas(environmentWidth, environmentHeight);
 
 		initializeUI(environmentWidth, environmentHeight);
 
@@ -119,6 +111,22 @@ public class Main {
 		displayUI();
 
 		mainEnvironmentLoop();
+	}
+
+	private static void initializeCanvas(int environmentWidth, int environmentHeight) {
+		displayEnvironmentBufferedImage = new BufferedImage(environmentWidth, environmentHeight, BufferedImage.TYPE_INT_RGB);
+
+		displayEnvironmentCanvas = (Graphics2D) displayEnvironmentBufferedImage.getGraphics();
+		displayEnvironmentCanvas.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+	}
+
+	private static void initializeEnvironment(int environmentWidth, int environmentHeight, int fishesCount, int foodCount) {
+		environment = new AgentsEnvironment(environmentWidth, environmentHeight);
+		environment.addListener(new EatenFoodObserver());
+
+		NeuralNetwork brain = ga.getBest();
+		addFishes(environment, brain, fishesCount);
+		addFood(environment, foodCount);
 	}
 
 	private static void displayUI() {
