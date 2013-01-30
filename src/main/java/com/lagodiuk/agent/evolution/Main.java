@@ -500,13 +500,17 @@ public class Main {
 			OptimizableNeuralNetwork baseNeuralNetwork) {
 		Population<OptimizableNeuralNetwork> brains = new Population<OptimizableNeuralNetwork>();
 
-		brains.addChromosome(baseNeuralNetwork);
 		for (int i = 0; i < (populationSize - 1); i++) {
 			if ((baseNeuralNetwork == null) || (random.nextDouble() < 0.5)) {
 				brains.addChromosome(NeuralNetworkDrivenFish.randomNeuralNetworkBrain());
 			} else {
 				brains.addChromosome(baseNeuralNetwork.mutate());
 			}
+		}
+		if (baseNeuralNetwork != null) {
+			brains.addChromosome(baseNeuralNetwork);
+		} else {
+			brains.addChromosome(NeuralNetworkDrivenFish.randomNeuralNetworkBrain());
 		}
 
 		Fitness<OptimizableNeuralNetwork, Double> fit = new TournamentEnvironmentFitness();
