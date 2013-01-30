@@ -178,7 +178,7 @@ public class Main {
 
 	private static void initializeUI(int environmentWidth, int environmentHeight) {
 		appFrame = new JFrame("Testing fishes visualizator");
-		appFrame.setSize(environmentWidth + 80, environmentHeight + 50);
+		appFrame.setSize(environmentWidth + 130, environmentHeight + 50);
 		appFrame.setResizable(false);
 		appFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
