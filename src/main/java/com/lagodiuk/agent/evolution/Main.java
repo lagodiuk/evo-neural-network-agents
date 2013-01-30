@@ -105,7 +105,7 @@ public class Main {
 		int fishesCount = 15;
 		int foodCount = 10;
 
-		initializeGeneticAlgorithm(gaPopulationSize, parentalChromosomesSurviveCount);
+		initializeGeneticAlgorithm(gaPopulationSize, parentalChromosomesSurviveCount, null);
 
 		initializeEnvironment(environmentWidth, environmentHeight, fishesCount, foodCount);
 
@@ -494,32 +494,6 @@ public class Main {
 		}
 	}
 
-	// TODO refactor
-	private static void initializeGeneticAlgorithm(
-			int populationSize,
-			int parentalChromosomesSurviveCount) {
-		Population<OptimizableNeuralNetwork> brains = new Population<OptimizableNeuralNetwork>();
-
-		for (int i = 0; i < populationSize; i++) {
-			brains.addChromosome(NeuralNetworkDrivenFish.randomNeuralNetworkBrain());
-		}
-
-		Fitness<OptimizableNeuralNetwork, Double> fit = new TournamentEnvironmentFitness() {
-			@Override
-			protected Food newPieceOfFood(int width, int height) {
-				Food food = createFood(width, height);
-				return food;
-			}
-		};
-
-		ga = new GeneticAlgorithm<OptimizableNeuralNetwork, Double>(brains, fit);
-
-		addSystemOutIterationListener(ga);
-
-		ga.setParentChromosomesSurviveCount(parentalChromosomesSurviveCount);
-	}
-
-	// TODO refactor
 	private static void initializeGeneticAlgorithm(
 			int populationSize,
 			int parentalChromosomesSurviveCount,
@@ -528,10 +502,10 @@ public class Main {
 
 		brains.addChromosome(baseNeuralNetwork);
 		for (int i = 0; i < (populationSize - 1); i++) {
-			if (random.nextDouble() < 0.5) {
-				brains.addChromosome(baseNeuralNetwork.mutate());
-			} else {
+			if ((baseNeuralNetwork == null) || (random.nextDouble() < 0.5)) {
 				brains.addChromosome(NeuralNetworkDrivenFish.randomNeuralNetworkBrain());
+			} else {
+				brains.addChromosome(baseNeuralNetwork.mutate());
 			}
 		}
 
