@@ -15,6 +15,8 @@ public class NeuralNetworkDrivenFish extends Fish {
 
 	private static final double maxSpeed = 4;
 
+	private static final double maxDeltaAngle = 1;
+
 	protected static final double maxFishesDistance = 5;
 
 	private static final double FISH = -10;
@@ -199,17 +201,19 @@ public class NeuralNetworkDrivenFish extends Fish {
 	}
 
 	private double normalizeSpeed(double speed) {
-		if (Math.abs(speed) > maxSpeed) {
-			speed = Math.signum(speed)
-					* (Math.abs(speed) - (Math.floor(Math.abs(speed) / maxSpeed) * maxSpeed));
+		double abs = Math.abs(speed);
+		if (abs > maxSpeed) {
+			double sign = Math.signum(speed);
+			speed = sign * (abs - (Math.floor(abs / maxSpeed) * maxSpeed));
 		}
 		return speed;
 	}
 
 	private double normalizeDeltaAngle(double angle) {
-		if (Math.abs(angle) > 1) {
-			angle = Math.signum(angle)
-					* (Math.abs(angle) - Math.floor(Math.abs(angle)));
+		double abs = Math.abs(angle);
+		if (abs > maxDeltaAngle) {
+			double sign = Math.signum(angle);
+			angle = sign * (abs - (Math.floor(abs / maxDeltaAngle) * maxDeltaAngle));
 		}
 		return angle;
 	}

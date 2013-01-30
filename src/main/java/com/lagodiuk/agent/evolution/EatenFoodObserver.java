@@ -75,12 +75,14 @@ public class EatenFoodObserver implements AgentsEnvironmentObserver {
 		for (Food food : eatenFood) {
 			env.removeAgent(food);
 
-			this.createRandomPieceOfFood(env);
+			this.addRandomPieceOfFood(env);
 		}
 	}
 
-	protected void createRandomPieceOfFood(AgentsEnvironment env) {
-		Food newFood = new Food(this.random.nextInt(env.getWidth()), this.random.nextInt(env.getHeight()));
+	protected void addRandomPieceOfFood(AgentsEnvironment env) {
+		int x = this.random.nextInt(env.getWidth());
+		int y = this.random.nextInt(env.getHeight());
+		Food newFood = new Food(x, y);
 		env.addAgent(newFood);
 	}
 

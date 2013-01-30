@@ -6,21 +6,27 @@ import java.awt.GridLayout;
 import java.awt.RenderingHints;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Random;
 import java.util.prefs.Preferences;
 
+import javax.swing.ButtonGroup;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
+import javax.swing.JRadioButton;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
@@ -28,6 +34,7 @@ import javax.swing.SwingUtilities;
 import com.lagodiuk.agent.Agent;
 import com.lagodiuk.agent.AgentsEnvironment;
 import com.lagodiuk.agent.Food;
+import com.lagodiuk.agent.MovingFood;
 import com.lagodiuk.agent.Visualizator;
 import com.lagodiuk.ga.Fitness;
 import com.lagodiuk.ga.GeneticAlgorithm;
@@ -50,6 +57,8 @@ public class Main {
 
 	private static volatile boolean play = true;
 
+	private static volatile boolean staticFood = true;
+
 	// UI
 
 	private static JFrame appFrame;
@@ -67,6 +76,12 @@ public class Main {
 	private static JButton loadBrainButton;
 
 	private static JButton saveBrainButton;
+
+	private static JRadioButton staticFoodRadioButton;
+
+	private static JRadioButton dynamicFoodRadioButton;
+
+	private static ButtonGroup foodTypeButtonGroup;
 
 	private static JProgressBar progressBar;
 
@@ -108,6 +123,8 @@ public class Main {
 
 		initializeSaveBrainButtonFunctionality();
 
+		initializeChangingFoodTypeFunctionality();
+
 		displayUI();
 
 		mainEnvironmentLoop();
@@ -122,11 +139,34 @@ public class Main {
 
 	private static void initializeEnvironment(int environmentWidth, int environmentHeight, int fishesCount, int foodCount) {
 		environment = new AgentsEnvironment(environmentWidth, environmentHeight);
-		environment.addListener(new EatenFoodObserver());
+		environment.addListener(new EatenFoodObserver() {
+			@Override
+			protected void addRandomPieceOfFood(AgentsEnvironment env) {
+				Food food = createFood(env.getWidth(), env.getHeight());
+				env.addAgent(food);
+			}
+		});
 
 		NeuralNetwork brain = ga.getBest();
-		addFishes(environment, brain, fishesCount);
-		addFood(environment, foodCount);
+		initializeFishes(environment, brain, fishesCount);
+		initializeFood(environment, foodCount);
+	}
+
+	private static Food createFood(int width, int height) {
+		int x = random.nextInt(width);
+		int y = random.nextInt(height);
+
+		Food food = null;
+		if (staticFood) {
+			food = new Food(x, y);
+		} else {
+			double speed = random.nextDouble() * 2;
+			double direction = random.nextDouble() * 2 * Math.PI;
+
+			food = new MovingFood(x, y, direction, speed);
+		}
+
+		return food;
 	}
 
 	private static void displayUI() {
@@ -164,6 +204,19 @@ public class Main {
 		loadBrainButton = new JButton("load brain");
 		controlsPanel.add(loadBrainButton);
 
+		staticFoodRadioButton = new JRadioButton("static food");
+		dynamicFoodRadioButton = new JRadioButton("dynamic food");
+		foodTypeButtonGroup = new ButtonGroup();
+		foodTypeButtonGroup.add(staticFoodRadioButton);
+		foodTypeButtonGroup.add(dynamicFoodRadioButton);
+		controlsPanel.add(staticFoodRadioButton);
+		controlsPanel.add(dynamicFoodRadioButton);
+		if (staticFood) {
+			staticFoodRadioButton.setSelected(true);
+		} else {
+			dynamicFoodRadioButton.setSelected(true);
+		}
+
 		playPauseButton = new JButton("pause");
 		controlsPanel.add(playPauseButton);
 
@@ -178,6 +231,42 @@ public class Main {
 		prefs = Preferences.userNodeForPackage(Main.class);
 		String brainsDirPath = prefs.get(PREFS_KEY_BRAINS_DIRECTORY, "");
 		fileChooser = new JFileChooser(new File(brainsDirPath));
+	}
+
+	protected static void initializeChangingFoodTypeFunctionality() {
+		ItemListener changingFoodTypeListener = new ItemListener() {
+			@Override
+			public void itemStateChanged(ItemEvent e) {
+				if (e.getStateChange() == ItemEvent.SELECTED) {
+					disableControls();
+					boolean wasPlaying = play;
+					play = false;
+
+					staticFood = !staticFood;
+
+					List<Food> food = new LinkedList<Food>();
+					for (Agent a : environment.getAgents()) {
+						if (a instanceof Food) {
+							food.add((Food) a);
+						}
+					}
+					for (Food f : food) {
+						environment.removeAgent(f);
+
+						Food newFood = createFood(1, 1);
+						newFood.setX(f.getX());
+						newFood.setY(f.getY());
+
+						environment.addAgent(newFood);
+					}
+
+					play = wasPlaying;
+					enableControls();
+				}
+			}
+		};
+		staticFoodRadioButton.addItemListener(changingFoodTypeListener);
+		dynamicFoodRadioButton.addItemListener(changingFoodTypeListener);
 	}
 
 	private static void mainEnvironmentLoop() throws InterruptedException {
@@ -336,6 +425,8 @@ public class Main {
 		evolveTextField.setEnabled(false);
 		loadBrainButton.setEnabled(false);
 		saveBrainButton.setEnabled(false);
+		staticFoodRadioButton.setEnabled(false);
+		dynamicFoodRadioButton.setEnabled(false);
 	}
 
 	private static void enableControls() {
@@ -343,6 +434,8 @@ public class Main {
 		evolveTextField.setEnabled(true);
 		loadBrainButton.setEnabled(true);
 		saveBrainButton.setEnabled(true);
+		staticFoodRadioButton.setEnabled(true);
+		dynamicFoodRadioButton.setEnabled(true);
 	}
 
 	private static void initializeAddingFoodFunctionality() {
@@ -352,7 +445,10 @@ public class Main {
 				double x = click.getX();
 				double y = click.getY();
 
-				Food food = new Food(x, y);
+				Food food = createFood(1, 1);
+				food.setX(x);
+				food.setY(y);
+
 				environment.addAgent(food);
 			}
 		});
@@ -372,22 +468,28 @@ public class Main {
 		});
 	}
 
-	private static void addFishes(AgentsEnvironment environment, NeuralNetwork brain, int fishesCount) {
+	private static void initializeFishes(AgentsEnvironment environment, NeuralNetwork brain, int fishesCount) {
 		int environmentWidth = environment.getWidth();
 		int environmentHeight = environment.getHeight();
+
 		for (int i = 0; i < fishesCount; i++) {
-			NeuralNetworkDrivenFish fish =
-					new NeuralNetworkDrivenFish(random.nextInt(environmentWidth), random.nextInt(environmentHeight), random.nextDouble() * 2 * Math.PI);
+			int x = random.nextInt(environmentWidth);
+			int y = random.nextInt(environmentHeight);
+			double direction = random.nextDouble() * 2 * Math.PI;
+
+			NeuralNetworkDrivenFish fish = new NeuralNetworkDrivenFish(x, y, direction);
 			fish.setBrain(brain);
+
 			environment.addAgent(fish);
 		}
 	}
 
-	private static void addFood(AgentsEnvironment environment, int foodCount) {
+	private static void initializeFood(AgentsEnvironment environment, int foodCount) {
 		int environmentWidth = environment.getWidth();
 		int environmentHeight = environment.getHeight();
+
 		for (int i = 0; i < foodCount; i++) {
-			Food food = new Food(random.nextInt(environmentWidth), random.nextInt(environmentHeight));
+			Food food = createFood(environmentWidth, environmentHeight);
 			environment.addAgent(food);
 		}
 	}
@@ -402,7 +504,13 @@ public class Main {
 			brains.addChromosome(NeuralNetworkDrivenFish.randomNeuralNetworkBrain());
 		}
 
-		Fitness<OptimizableNeuralNetwork, Double> fit = new TournamentEnvironmentFitness();
+		Fitness<OptimizableNeuralNetwork, Double> fit = new TournamentEnvironmentFitness() {
+			@Override
+			protected Food newPieceOfFood(int width, int height) {
+				Food food = createFood(width, height);
+				return food;
+			}
+		};
 
 		ga = new GeneticAlgorithm<OptimizableNeuralNetwork, Double>(brains, fit);
 

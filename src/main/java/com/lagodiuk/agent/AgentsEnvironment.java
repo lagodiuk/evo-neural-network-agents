@@ -31,7 +31,7 @@ public class AgentsEnvironment {
 		return this.height;
 	}
 
-	public void timeStep() {
+	public synchronized void timeStep() {
 		for (Agent agent : this.getAgents()) {
 			agent.interact(this);
 			this.avoidMovingOutsideOfBounds(agent);
@@ -69,11 +69,11 @@ public class AgentsEnvironment {
 		return new LinkedList<Agent>(this.agents);
 	}
 
-	public void addAgent(Agent agent) {
+	public synchronized void addAgent(Agent agent) {
 		this.agents.add(agent);
 	}
 
-	public void removeAgent(Agent agent) {
+	public synchronized void removeAgent(Agent agent) {
 		this.agents.remove(agent);
 	}
 }
