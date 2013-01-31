@@ -10,7 +10,7 @@ public class AgentsEnvironment {
 
 	private int height;
 
-	private List<Agent> agents = new ArrayList<Agent>();
+	private List<AbstractAgent> agents = new ArrayList<AbstractAgent>();
 
 	private List<AgentsEnvironmentObserver> listeners = new ArrayList<AgentsEnvironmentObserver>();
 
@@ -32,7 +32,7 @@ public class AgentsEnvironment {
 	}
 
 	public synchronized void timeStep() {
-		for (Agent agent : this.getAgents()) {
+		for (AbstractAgent agent : this.getAgents()) {
 			agent.interact(this);
 			this.avoidMovingOutsideOfBounds(agent);
 		}
@@ -44,7 +44,7 @@ public class AgentsEnvironment {
 	/**
 	 * avoid moving outside of environment
 	 */
-	private void avoidMovingOutsideOfBounds(Agent agent) {
+	private void avoidMovingOutsideOfBounds(AbstractAgent agent) {
 		double newX = agent.getX();
 		double newY = agent.getY();
 		if (newX < 0) {
@@ -64,16 +64,16 @@ public class AgentsEnvironment {
 		agent.setY(newY);
 	}
 
-	public List<Agent> getAgents() {
+	public List<AbstractAgent> getAgents() {
 		// to avoid concurrent modification exception
-		return new LinkedList<Agent>(this.agents);
+		return new LinkedList<AbstractAgent>(this.agents);
 	}
 
-	public synchronized void addAgent(Agent agent) {
+	public synchronized void addAgent(AbstractAgent agent) {
 		this.agents.add(agent);
 	}
 
-	public synchronized void removeAgent(Agent agent) {
+	public synchronized void removeAgent(AbstractAgent agent) {
 		this.agents.remove(agent);
 	}
 }

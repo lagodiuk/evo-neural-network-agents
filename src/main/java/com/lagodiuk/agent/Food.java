@@ -1,6 +1,6 @@
 package com.lagodiuk.agent;
 
-public class Food implements Agent {
+public class Food implements AbstractAgent {
 
 	private double x;
 

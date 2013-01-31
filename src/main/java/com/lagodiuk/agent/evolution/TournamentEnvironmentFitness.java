@@ -16,21 +16,21 @@ public class TournamentEnvironmentFitness implements Fitness<OptimizableNeuralNe
 		// TODO maybe, its better to initialize these parameters in constructor
 		final int width = 200;
 		final int height = 200;
-		int fishesCount = 10;
+		int agentsCount = 10;
 		int foodCount = 5;
 		int environmentIterations = 50;
 
 		AgentsEnvironment env = new AgentsEnvironment(width, height);
 
-		for (int i = 0; i < fishesCount; i++) {
+		for (int i = 0; i < agentsCount; i++) {
 			int x = random.nextInt(width);
 			int y = random.nextInt(height);
 			double direction = 2 * Math.PI * random.nextDouble();
 
-			NeuralNetworkDrivenFish fish = new NeuralNetworkDrivenFish(x, y, direction);
-			fish.setBrain(chromosome);
+			NeuralNetworkDrivenAgent agent = new NeuralNetworkDrivenAgent(x, y, direction);
+			agent.setBrain(chromosome);
 
-			env.addAgent(fish);
+			env.addAgent(agent);
 		}
 
 		for (int i = 0; i < foodCount; i++) {

@@ -31,11 +31,10 @@ import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 
-import com.lagodiuk.agent.Agent;
+import com.lagodiuk.agent.AbstractAgent;
 import com.lagodiuk.agent.AgentsEnvironment;
 import com.lagodiuk.agent.Food;
 import com.lagodiuk.agent.MovingFood;
-import com.lagodiuk.agent.Visualizator;
 import com.lagodiuk.ga.Fitness;
 import com.lagodiuk.ga.GeneticAlgorithm;
 import com.lagodiuk.ga.IterartionListener;
@@ -102,12 +101,12 @@ public class Main {
 		int parentalChromosomesSurviveCount = 1;
 		int environmentWidth = 600;
 		int environmentHeight = 400;
-		int fishesCount = 15;
+		int agentsCount = 15;
 		int foodCount = 10;
 
 		initializeGeneticAlgorithm(gaPopulationSize, parentalChromosomesSurviveCount, null);
 
-		initializeEnvironment(environmentWidth, environmentHeight, fishesCount, foodCount);
+		initializeEnvironment(environmentWidth, environmentHeight, agentsCount, foodCount);
 
 		initializeCanvas(environmentWidth, environmentHeight);
 
@@ -137,7 +136,7 @@ public class Main {
 		displayEnvironmentCanvas.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 	}
 
-	private static void initializeEnvironment(int environmentWidth, int environmentHeight, int fishesCount, int foodCount) {
+	private static void initializeEnvironment(int environmentWidth, int environmentHeight, int agentsCount, int foodCount) {
 		environment = new AgentsEnvironment(environmentWidth, environmentHeight);
 		environment.addListener(new EatenFoodObserver() {
 			@Override
@@ -148,7 +147,7 @@ public class Main {
 		});
 
 		NeuralNetwork brain = ga.getBest();
-		initializeFishes(environment, brain, fishesCount);
+		initializeAgents(environment, brain, agentsCount);
 		initializeFood(environment, foodCount);
 	}
 
@@ -177,7 +176,7 @@ public class Main {
 	}
 
 	private static void initializeUI(int environmentWidth, int environmentHeight) {
-		appFrame = new JFrame("Testing fishes visualizator");
+		appFrame = new JFrame("Evolving neural network driven agnets");
 		appFrame.setSize(environmentWidth + 130, environmentHeight + 50);
 		appFrame.setResizable(false);
 		appFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -245,7 +244,7 @@ public class Main {
 					staticFood = !staticFood;
 
 					List<Food> food = new LinkedList<Food>();
-					for (Agent a : environment.getAgents()) {
+					for (AbstractAgent a : environment.getAgents()) {
 						if (a instanceof Food) {
 							food.add((Food) a);
 						}
@@ -302,9 +301,9 @@ public class Main {
 						NeuralNetwork newBrain = NeuralNetwork.unmarsall(in);
 						in.close();
 
-						for (Agent agent : environment.getAgents()) {
-							if (agent instanceof NeuralNetworkDrivenFish) {
-								((NeuralNetworkDrivenFish) agent).setBrain(newBrain);
+						for (AbstractAgent agent : environment.getAgents()) {
+							if (agent instanceof NeuralNetworkDrivenAgent) {
+								((NeuralNetworkDrivenAgent) agent).setBrain(newBrain);
 							}
 						}
 
@@ -399,9 +398,9 @@ public class Main {
 						populationNumber += iterCount;
 
 						NeuralNetwork brain = ga.getBest();
-						for (Agent agent : environment.getAgents()) {
-							if (agent instanceof NeuralNetworkDrivenFish) {
-								((NeuralNetworkDrivenFish) agent).setBrain(brain);
+						for (AbstractAgent agent : environment.getAgents()) {
+							if (agent instanceof NeuralNetworkDrivenAgent) {
+								((NeuralNetworkDrivenAgent) agent).setBrain(brain);
 							}
 						}
 
@@ -468,19 +467,19 @@ public class Main {
 		});
 	}
 
-	private static void initializeFishes(AgentsEnvironment environment, NeuralNetwork brain, int fishesCount) {
+	private static void initializeAgents(AgentsEnvironment environment, NeuralNetwork brain, int agentsCount) {
 		int environmentWidth = environment.getWidth();
 		int environmentHeight = environment.getHeight();
 
-		for (int i = 0; i < fishesCount; i++) {
+		for (int i = 0; i < agentsCount; i++) {
 			int x = random.nextInt(environmentWidth);
 			int y = random.nextInt(environmentHeight);
 			double direction = random.nextDouble() * 2 * Math.PI;
 
-			NeuralNetworkDrivenFish fish = new NeuralNetworkDrivenFish(x, y, direction);
-			fish.setBrain(brain);
+			NeuralNetworkDrivenAgent agent = new NeuralNetworkDrivenAgent(x, y, direction);
+			agent.setBrain(brain);
 
-			environment.addAgent(fish);
+			environment.addAgent(agent);
 		}
 	}
 
@@ -502,7 +501,7 @@ public class Main {
 
 		for (int i = 0; i < (populationSize - 1); i++) {
 			if ((baseNeuralNetwork == null) || (random.nextDouble() < 0.5)) {
-				brains.addChromosome(NeuralNetworkDrivenFish.randomNeuralNetworkBrain());
+				brains.addChromosome(NeuralNetworkDrivenAgent.randomNeuralNetworkBrain());
 			} else {
 				brains.addChromosome(baseNeuralNetwork.mutate());
 			}
@@ -510,7 +509,7 @@ public class Main {
 		if (baseNeuralNetwork != null) {
 			brains.addChromosome(baseNeuralNetwork);
 		} else {
-			brains.addChromosome(NeuralNetworkDrivenFish.randomNeuralNetworkBrain());
+			brains.addChromosome(NeuralNetworkDrivenAgent.randomNeuralNetworkBrain());
 		}
 
 		Fitness<OptimizableNeuralNetwork, Double> fit = new TournamentEnvironmentFitness();

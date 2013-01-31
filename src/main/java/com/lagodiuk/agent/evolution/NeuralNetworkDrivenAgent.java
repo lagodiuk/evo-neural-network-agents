@@ -3,15 +3,15 @@ package com.lagodiuk.agent.evolution;
 import java.util.LinkedList;
 import java.util.List;
 
-import com.lagodiuk.agent.Agent;
+import com.lagodiuk.agent.AbstractAgent;
 import com.lagodiuk.agent.AgentsEnvironment;
-import com.lagodiuk.agent.Fish;
+import com.lagodiuk.agent.Agent;
 import com.lagodiuk.agent.Food;
 import com.lagodiuk.nn.NeuralNetwork;
 import com.lagodiuk.nn.ThresholdFunction;
 import com.lagodiuk.nn.genetic.OptimizableNeuralNetwork;
 
-public class NeuralNetworkDrivenFish extends Fish {
+public class NeuralNetworkDrivenAgent extends Agent {
 
 	private static final double maxSpeed = 4;
 
@@ -27,7 +27,7 @@ public class NeuralNetworkDrivenFish extends Fish {
 
 	private volatile NeuralNetwork brain;
 
-	public NeuralNetworkDrivenFish(double x, double y, double angle) {
+	public NeuralNetworkDrivenAgent(double x, double y, double angle) {
 		super(x, y, angle);
 	}
 
@@ -82,7 +82,7 @@ public class NeuralNetworkDrivenFish extends Fish {
 		Food nearestFood = null;
 		double nearestFoodDist = Double.MAX_VALUE;
 		// TODO use Guava
-		for (Agent obj : environment.getAgents()) {
+		for (AbstractAgent obj : environment.getAgents()) {
 			if (obj instanceof Food) {
 				Food currFood = (Food) obj;
 
@@ -99,12 +99,12 @@ public class NeuralNetworkDrivenFish extends Fish {
 		}
 
 		// Find nearest fish
-		Fish nearestFish = null;
+		Agent nearestFish = null;
 		double nearestFishDist = maxFishesDistance;
 		// TODO use Guava
-		for (Agent obj : environment.getAgents()) {
-			if (obj instanceof Fish) {
-				Fish currFish = (Fish) obj;
+		for (AbstractAgent obj : environment.getAgents()) {
+			if (obj instanceof Agent) {
+				Agent currFish = (Agent) obj;
 
 				if (this == currFish) {
 					continue;
@@ -170,12 +170,12 @@ public class NeuralNetworkDrivenFish extends Fish {
 		return nnInputs;
 	}
 
-	protected boolean inSight(Agent agent) {
+	protected boolean inSight(AbstractAgent agent) {
 		double crossProduct = this.cosTeta(this.getRx(), this.getRy(), agent.getX() - this.getX(), agent.getY() - this.getY());
 		return (crossProduct > 0);
 	}
 
-	protected double distanceTo(Agent agent) {
+	protected double distanceTo(AbstractAgent agent) {
 		return this.module(agent.getX() - this.getX(), agent.getY() - this.getY());
 	}
 
