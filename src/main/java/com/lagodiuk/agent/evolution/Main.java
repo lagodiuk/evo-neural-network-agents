@@ -31,7 +31,6 @@ import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 
-import com.lagodiuk.agent.AbstractAgent;
 import com.lagodiuk.agent.AgentsEnvironment;
 import com.lagodiuk.agent.Food;
 import com.lagodiuk.agent.MovingFood;
@@ -141,7 +140,7 @@ public class Main {
 		environment.addListener(new EatenFoodObserver() {
 			@Override
 			protected void addRandomPieceOfFood(AgentsEnvironment env) {
-				Food food = createFood(env.getWidth(), env.getHeight());
+				Food food = createRandomFood(env.getWidth(), env.getHeight());
 				env.addAgent(food);
 			}
 		});
@@ -151,7 +150,7 @@ public class Main {
 		initializeFood(environment, foodCount);
 	}
 
-	private static Food createFood(int width, int height) {
+	private static Food createRandomFood(int width, int height) {
 		int x = random.nextInt(width);
 		int y = random.nextInt(height);
 
@@ -164,7 +163,6 @@ public class Main {
 
 			food = new MovingFood(x, y, direction, speed);
 		}
-
 		return food;
 	}
 
@@ -244,15 +242,13 @@ public class Main {
 					staticFood = !staticFood;
 
 					List<Food> food = new LinkedList<Food>();
-					for (AbstractAgent a : environment.getAgents()) {
-						if (a instanceof Food) {
-							food.add((Food) a);
-						}
+					for (Food f : environment.filter(Food.class)) {
+						food.add(f);
 					}
 					for (Food f : food) {
 						environment.removeAgent(f);
 
-						Food newFood = createFood(1, 1);
+						Food newFood = createRandomFood(1, 1);
 						newFood.setX(f.getX());
 						newFood.setY(f.getY());
 
@@ -301,10 +297,8 @@ public class Main {
 						NeuralNetwork newBrain = NeuralNetwork.unmarsall(in);
 						in.close();
 
-						for (AbstractAgent agent : environment.getAgents()) {
-							if (agent instanceof NeuralNetworkDrivenAgent) {
-								((NeuralNetworkDrivenAgent) agent).setBrain(newBrain);
-							}
+						for (NeuralNetworkDrivenAgent agent : environment.filter(NeuralNetworkDrivenAgent.class)) {
+							agent.setBrain(newBrain);
 						}
 
 						OptimizableNeuralNetwork optimizableNewBrain = new OptimizableNeuralNetwork(newBrain);
@@ -398,10 +392,8 @@ public class Main {
 						populationNumber += iterCount;
 
 						NeuralNetwork brain = ga.getBest();
-						for (AbstractAgent agent : environment.getAgents()) {
-							if (agent instanceof NeuralNetworkDrivenAgent) {
-								((NeuralNetworkDrivenAgent) agent).setBrain(brain);
-							}
+						for (NeuralNetworkDrivenAgent agent : environment.filter(NeuralNetworkDrivenAgent.class)) {
+							agent.setBrain(brain);
 						}
 
 						SwingUtilities.invokeLater(new Runnable() {
@@ -444,7 +436,7 @@ public class Main {
 				double x = click.getX();
 				double y = click.getY();
 
-				Food food = createFood(1, 1);
+				Food food = createRandomFood(1, 1);
 				food.setX(x);
 				food.setY(y);
 
@@ -488,7 +480,7 @@ public class Main {
 		int environmentHeight = environment.getHeight();
 
 		for (int i = 0; i < foodCount; i++) {
-			Food food = createFood(environmentWidth, environmentHeight);
+			Food food = createRandomFood(environmentWidth, environmentHeight);
 			environment.addAgent(food);
 		}
 	}

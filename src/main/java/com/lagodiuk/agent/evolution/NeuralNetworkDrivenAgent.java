@@ -4,8 +4,8 @@ import java.util.LinkedList;
 import java.util.List;
 
 import com.lagodiuk.agent.AbstractAgent;
-import com.lagodiuk.agent.AgentsEnvironment;
 import com.lagodiuk.agent.Agent;
+import com.lagodiuk.agent.AgentsEnvironment;
 import com.lagodiuk.agent.Food;
 import com.lagodiuk.nn.NeuralNetwork;
 import com.lagodiuk.nn.ThresholdFunction;
@@ -17,9 +17,9 @@ public class NeuralNetworkDrivenAgent extends Agent {
 
 	private static final double maxDeltaAngle = 1;
 
-	protected static final double maxFishesDistance = 5;
+	protected static final double maxAgentsDistance = 5;
 
-	private static final double FISH = -10;
+	private static final double AGENT = -10;
 
 	private static final double EMPTY = 0;
 
@@ -32,7 +32,7 @@ public class NeuralNetworkDrivenAgent extends Agent {
 	}
 
 	/**
-	 * Animating of fishes and evolving best brain - might be in different
+	 * Animating of agents and evolving best brain - might be in different
 	 * threads <br/>
 	 * Synchronization prevents from race condition when trying to set new
 	 * brain, while method "interact" runs <br/>
@@ -81,43 +81,29 @@ public class NeuralNetworkDrivenAgent extends Agent {
 		// Find nearest food
 		Food nearestFood = null;
 		double nearestFoodDist = Double.MAX_VALUE;
-		// TODO use Guava
-		for (AbstractAgent obj : environment.getAgents()) {
-			if (obj instanceof Food) {
-				Food currFood = (Food) obj;
 
+		for (Food currFood : environment.filter(Food.class)) {
+			// agent can see only ahead
+			if (this.inSight(currFood)) {
 				double currFoodDist = this.distanceTo(currFood);
-
 				if ((nearestFood == null) || (currFoodDist <= nearestFoodDist)) {
-					// fish can see only ahead
-					if (this.inSight(currFood)) {
-						nearestFood = currFood;
-						nearestFoodDist = currFoodDist;
-					}
+					nearestFood = currFood;
+					nearestFoodDist = currFoodDist;
 				}
 			}
 		}
 
-		// Find nearest fish
-		Agent nearestFish = null;
-		double nearestFishDist = maxFishesDistance;
-		// TODO use Guava
-		for (AbstractAgent obj : environment.getAgents()) {
-			if (obj instanceof Agent) {
-				Agent currFish = (Agent) obj;
+		// Find nearest agent
+		Agent nearestAgent = null;
+		double nearestAgentDist = maxAgentsDistance;
 
-				if (this == currFish) {
-					continue;
-				}
-
-				double currFishDist = this.distanceTo(currFish);
-
-				if (currFishDist <= nearestFishDist) {
-					// fish can see only ahead
-					if (this.inSight(currFish)) {
-						nearestFish = currFish;
-						nearestFishDist = currFishDist;
-					}
+		for (Agent currAgent : environment.filter(Agent.class)) {
+			// agent can see only ahead
+			if ((this != currAgent) && (this.inSight(currAgent))) {
+				double currAgentDist = this.distanceTo(currAgent);
+				if (currAgentDist <= nearestAgentDist) {
+					nearestAgent = currAgent;
+					nearestAgentDist = currAgentDist;
 				}
 			}
 		}
@@ -149,18 +135,18 @@ public class NeuralNetworkDrivenAgent extends Agent {
 			nnInputs.add(0.0);
 		}
 
-		if (nearestFish != null) {
-			double fishDirectionVectorX = nearestFish.getX() - x;
-			double fishDirectionVectorY = nearestFish.getY() - y;
+		if (nearestAgent != null) {
+			double agentDirectionVectorX = nearestAgent.getX() - x;
+			double agentDirectionVectorY = nearestAgent.getY() - y;
 
 			// left/right cos
-			double fishDirectionCosTeta =
-					Math.signum(this.pseudoScalarProduct(rx, ry, fishDirectionVectorX, fishDirectionVectorY))
-							* this.cosTeta(rx, ry, fishDirectionVectorX, fishDirectionVectorY);
+			double agentDirectionCosTeta =
+					Math.signum(this.pseudoScalarProduct(rx, ry, agentDirectionVectorX, agentDirectionVectorY))
+							* this.cosTeta(rx, ry, agentDirectionVectorX, agentDirectionVectorY);
 
-			nnInputs.add(FISH);
-			nnInputs.add(nearestFishDist);
-			nnInputs.add(fishDirectionCosTeta);
+			nnInputs.add(AGENT);
+			nnInputs.add(nearestAgentDist);
+			nnInputs.add(agentDirectionCosTeta);
 
 		} else {
 			nnInputs.add(EMPTY);

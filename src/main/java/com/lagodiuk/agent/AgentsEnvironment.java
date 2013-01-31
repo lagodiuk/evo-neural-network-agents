@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
+import com.google.common.collect.Iterables;
+
 public class AgentsEnvironment {
 
 	private int width;
@@ -75,5 +77,9 @@ public class AgentsEnvironment {
 
 	public synchronized void removeAgent(AbstractAgent agent) {
 		this.agents.remove(agent);
+	}
+
+	public <T extends AbstractAgent> Iterable<T> filter(Class<T> clazz) {
+		return Iterables.filter(this.getAgents(), clazz);
 	}
 }

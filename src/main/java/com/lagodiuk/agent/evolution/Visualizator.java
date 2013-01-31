@@ -3,7 +3,6 @@ package com.lagodiuk.agent.evolution;
 import java.awt.Color;
 import java.awt.Graphics2D;
 
-import com.lagodiuk.agent.AbstractAgent;
 import com.lagodiuk.agent.Agent;
 import com.lagodiuk.agent.AgentsEnvironment;
 import com.lagodiuk.agent.Food;
@@ -16,40 +15,31 @@ public class Visualizator {
 		canvas.clearRect(0, 0, environment.getWidth(), environment.getHeight());
 
 		canvas.setColor(new Color(200, 30, 70));
-		for (AbstractAgent a : environment.getAgents()) {
-			if (a instanceof Food) {
-				Food food = (Food) a;
-				int x = (int) food.getX();
-				int y = (int) food.getY();
-				canvas.fillOval(x - agentRadius, y - agentRadius, agentRadius * 2, agentRadius * 2);
-			}
+		for (Food food : environment.filter(Food.class)) {
+			int x = (int) food.getX();
+			int y = (int) food.getY();
+
+			canvas.fillOval(x - agentRadius, y - agentRadius, agentRadius * 2, agentRadius * 2);
 		}
 
 		canvas.setColor(Color.GREEN);
-		for (AbstractAgent a : environment.getAgents()) {
-			if (a instanceof Agent) {
-				Agent agent = (Agent) a;
+		for (Agent agent : environment.filter(Agent.class)) {
+			int x = (int) agent.getX();
+			int y = (int) agent.getY();
 
-				int x = (int) agent.getX();
-				int y = (int) agent.getY();
-
-				canvas.fillOval(x - agentRadius, y - agentRadius, agentRadius * 2, agentRadius * 2);
-			}
+			canvas.fillOval(x - agentRadius, y - agentRadius, agentRadius * 2, agentRadius * 2);
 		}
 
 		canvas.setColor(Color.WHITE);
-		for (AbstractAgent a : environment.getAgents()) {
-			if (a instanceof Agent) {
-				Agent agent = (Agent) a;
+		for (Agent agent : environment.filter(Agent.class)) {
+			int x = (int) agent.getX();
+			int y = (int) agent.getY();
 
-				int x = (int) agent.getX();
-				int y = (int) agent.getY();
-				int rx = (int) ((agent.getRx() * (agentRadius + 4)) + x);
-				int ry = (int) ((agent.getRy() * (agentRadius + 4)) + y);
+			int rx = (int) ((agent.getRx() * (agentRadius + 4)) + x);
+			int ry = (int) ((agent.getRy() * (agentRadius + 4)) + y);
 
-				canvas.drawOval(x - agentRadius, y - agentRadius, agentRadius * 2, agentRadius * 2);
-				canvas.drawLine(x, y, rx, ry);
-			}
+			canvas.drawOval(x - agentRadius, y - agentRadius, agentRadius * 2, agentRadius * 2);
+			canvas.drawLine(x, y, rx, ry);
 		}
 	}
 }

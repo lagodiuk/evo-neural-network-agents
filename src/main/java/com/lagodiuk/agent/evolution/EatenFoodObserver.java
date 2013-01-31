@@ -5,10 +5,9 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
 
-import com.lagodiuk.agent.AbstractAgent;
+import com.lagodiuk.agent.Agent;
 import com.lagodiuk.agent.AgentsEnvironment;
 import com.lagodiuk.agent.AgentsEnvironmentObserver;
-import com.lagodiuk.agent.Agent;
 import com.lagodiuk.agent.Food;
 
 /**
@@ -48,7 +47,6 @@ public class EatenFoodObserver implements AgentsEnvironmentObserver {
 				double distanceToSecondFish = this.module(firstFish.getX() - secondFish.getX(), firstFish.getY() - secondFish.getY());
 				if (distanceToSecondFish < maxFishesDistance) {
 					collidedFishes.add(secondFish);
-					// this.score -= 0.5;
 				}
 			}
 		}
@@ -62,7 +60,6 @@ public class EatenFoodObserver implements AgentsEnvironmentObserver {
 			for (Agent fish : this.getFishes(env)) {
 				double distanceToFood = this.module(food.getX() - fish.getX(), food.getY() - fish.getY());
 				if (distanceToFood < minEatDistance) {
-					// this.score++;
 					eatenFood.add(food);
 					continue F;
 				}
@@ -87,23 +84,17 @@ public class EatenFoodObserver implements AgentsEnvironmentObserver {
 	}
 
 	private List<Food> getFood(AgentsEnvironment env) {
-		// TODO use Guava
 		List<Food> food = new ArrayList<Food>();
-		for (AbstractAgent agent : env.getAgents()) {
-			if (agent instanceof Food) {
-				food.add((Food) agent);
-			}
+		for (Food f : env.filter(Food.class)) {
+			food.add(f);
 		}
 		return food;
 	}
 
 	private List<Agent> getFishes(AgentsEnvironment env) {
-		// TODO use Guava
 		List<Agent> fishes = new ArrayList<Agent>();
-		for (AbstractAgent agent : env.getAgents()) {
-			if (agent instanceof Agent) {
-				fishes.add((Agent) agent);
-			}
+		for (Agent agent : env.filter(Agent.class)) {
+			fishes.add(agent);
 		}
 		return fishes;
 	}
