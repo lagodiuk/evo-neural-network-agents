@@ -21,6 +21,7 @@ import java.util.prefs.Preferences;
 
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -57,6 +58,8 @@ public class Main {
 
 	private static volatile boolean staticFood = true;
 
+	private static volatile boolean regenerateFood = true;
+
 	// UI
 
 	private static JFrame appFrame;
@@ -80,6 +83,8 @@ public class Main {
 	private static JRadioButton dynamicFoodRadioButton;
 
 	private static ButtonGroup foodTypeButtonGroup;
+
+	private static JCheckBox regenerateFoodCheckbox;
 
 	private static JProgressBar progressBar;
 
@@ -123,6 +128,8 @@ public class Main {
 
 		initializeChangingFoodTypeFunctionality();
 
+		initializeRegenerateFoodCheckboxFunctionality();
+
 		displayUI();
 
 		mainEnvironmentLoop();
@@ -140,8 +147,10 @@ public class Main {
 		environment.addListener(new EatenFoodObserver() {
 			@Override
 			protected void addRandomPieceOfFood(AgentsEnvironment env) {
-				Food food = createRandomFood(env.getWidth(), env.getHeight());
-				env.addAgent(food);
+				if (regenerateFood) {
+					Food food = createRandomFood(env.getWidth(), env.getHeight());
+					env.addAgent(food);
+				}
 			}
 		});
 
@@ -200,6 +209,10 @@ public class Main {
 
 		loadBrainButton = new JButton("load brain");
 		controlsPanel.add(loadBrainButton);
+
+		regenerateFoodCheckbox = new JCheckBox("regenerate food");
+		regenerateFoodCheckbox.setSelected(regenerateFood);
+		controlsPanel.add(regenerateFoodCheckbox);
 
 		staticFoodRadioButton = new JRadioButton("static food");
 		dynamicFoodRadioButton = new JRadioButton("dynamic food");
@@ -262,6 +275,15 @@ public class Main {
 		};
 		staticFoodRadioButton.addItemListener(changingFoodTypeListener);
 		dynamicFoodRadioButton.addItemListener(changingFoodTypeListener);
+	}
+
+	public static void initializeRegenerateFoodCheckboxFunctionality() {
+		regenerateFoodCheckbox.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				regenerateFood = !regenerateFood;
+			}
+		});
 	}
 
 	private static void mainEnvironmentLoop() throws InterruptedException {
@@ -436,11 +458,18 @@ public class Main {
 				double x = click.getX();
 				double y = click.getY();
 
-				Food food = createRandomFood(1, 1);
-				food.setX(x);
-				food.setY(y);
-
-				environment.addAgent(food);
+				if (SwingUtilities.isLeftMouseButton(click)) {
+					Food food = createRandomFood(1, 1);
+					food.setX(x);
+					food.setY(y);
+					environment.addAgent(food);
+				} else {
+					double angle = 2 * Math.PI * random.nextDouble();
+					NeuralNetworkDrivenAgent agent = new NeuralNetworkDrivenAgent(x, y, angle);
+					OptimizableNeuralNetwork brain = ga.getBest();
+					agent.setBrain(brain);
+					environment.addAgent(agent);
+				}
 			}
 		});
 	}
