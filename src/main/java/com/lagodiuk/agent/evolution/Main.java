@@ -78,6 +78,8 @@ public class Main {
 
 	private static JButton saveBrainButton;
 
+	private static JButton resetButton;
+
 	private static JRadioButton staticFoodRadioButton;
 
 	private static JRadioButton dynamicFoodRadioButton;
@@ -129,6 +131,8 @@ public class Main {
 		initializeChangingFoodTypeFunctionality();
 
 		initializeRegenerateFoodCheckboxFunctionality();
+
+		initializeResetButtonFunctionality();
 
 		displayUI();
 
@@ -210,10 +214,6 @@ public class Main {
 		loadBrainButton = new JButton("load brain");
 		controlsPanel.add(loadBrainButton);
 
-		regenerateFoodCheckbox = new JCheckBox("regenerate food");
-		regenerateFoodCheckbox.setSelected(regenerateFood);
-		controlsPanel.add(regenerateFoodCheckbox);
-
 		staticFoodRadioButton = new JRadioButton("static food");
 		dynamicFoodRadioButton = new JRadioButton("dynamic food");
 		foodTypeButtonGroup = new ButtonGroup();
@@ -227,8 +227,15 @@ public class Main {
 			dynamicFoodRadioButton.setSelected(true);
 		}
 
+		regenerateFoodCheckbox = new JCheckBox("regenerate food");
+		regenerateFoodCheckbox.setSelected(regenerateFood);
+		controlsPanel.add(regenerateFoodCheckbox);
+
 		playPauseButton = new JButton("pause");
 		controlsPanel.add(playPauseButton);
+
+		resetButton = new JButton("reset");
+		controlsPanel.add(resetButton);
 
 		progressBar = new JProgressBar(0, 100);
 		progressBar.setValue(0);
@@ -365,6 +372,31 @@ public class Main {
 						e.printStackTrace();
 					}
 				}
+
+				enableControls();
+			}
+		});
+	}
+
+	private static void initializeResetButtonFunctionality() {
+		resetButton.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				disableControls();
+
+				int populationSize = ga.getPopulation().getSize();
+				int parentalChromosomesSurviveCount = ga.getParentChromosomesSurviveCount();
+				initializeGeneticAlgorithm(populationSize, parentalChromosomesSurviveCount, null);
+
+				NeuralNetwork newBrain = ga.getBest();
+
+				for (NeuralNetworkDrivenAgent agent : environment.filter(NeuralNetworkDrivenAgent.class)) {
+					agent.setBrain(newBrain);
+				}
+
+				// reset population number counter
+				populationNumber = 0;
+				populationInfoLabel.setText("Population: " + populationNumber);
 
 				enableControls();
 			}
@@ -537,12 +569,12 @@ public class Main {
 
 		ga = new GeneticAlgorithm<OptimizableNeuralNetwork, Double>(brains, fit);
 
-		addSystemOutIterationListener(ga);
+		addGASystemOutIterationListener();
 
 		ga.setParentChromosomesSurviveCount(parentalChromosomesSurviveCount);
 	}
 
-	private static void addSystemOutIterationListener(GeneticAlgorithm<OptimizableNeuralNetwork, Double> ga) {
+	private static void addGASystemOutIterationListener() {
 		ga.addIterationListener(new IterartionListener<OptimizableNeuralNetwork, Double>() {
 			@Override
 			public void update(GeneticAlgorithm<OptimizableNeuralNetwork, Double> ga) {

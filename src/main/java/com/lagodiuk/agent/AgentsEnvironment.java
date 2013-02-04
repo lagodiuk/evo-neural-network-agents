@@ -4,8 +4,6 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
-import com.google.common.collect.Iterables;
-
 public class AgentsEnvironment {
 
 	private int width;
@@ -79,7 +77,16 @@ public class AgentsEnvironment {
 		this.agents.remove(agent);
 	}
 
+	@SuppressWarnings("unchecked")
 	public <T extends AbstractAgent> Iterable<T> filter(Class<T> clazz) {
-		return Iterables.filter(this.getAgents(), clazz);
+		// Guava increases binary size from 70Kb to 2Mb :(
+		// return Iterables.filter(this.getAgents(), clazz);
+		List<T> filtered = new LinkedList<T>();
+		for (AbstractAgent agent : this.getAgents()) {
+			if (clazz.isInstance(agent)) {
+				filtered.add((T) agent);
+			}
+		}
+		return filtered;
 	}
 }

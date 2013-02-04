@@ -20,11 +20,12 @@
 			<version>1.0.2</version>
 		</dependency>
 
-		<dependency>
+		<!-- Guava increases binary size from 70Kb to 2Mb :( -->
+		<!-- <dependency>
 			<groupId>com.google.guava</groupId>
 			<artifactId>guava</artifactId>
 			<version>13.0</version>
-		</dependency>
+		</dependency> -->
 
 		<dependency>
 			<groupId>junit</groupId>

@@ -74,22 +74,6 @@ public enum ThresholdFunction {
 			ret.add(c);
 			return ret;
 		}
-	},
-	@XmlEnumValue("RADIAL")
-	RADIAL {
-		@Override
-		public double calculate(double value, List<Double> params) {
-			double a = params.get(0);
-			return Math.exp((-value * value) / (a * a));
-		}
-
-		@Override
-		public List<Double> getDefaultParams() {
-			double a = 1;
-			List<Double> ret = new ArrayList<Double>(3);
-			ret.add(a);
-			return ret;
-		}
 	};
 
 	private static final Random random = new Random();
