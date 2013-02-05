@@ -28,7 +28,7 @@ public class TournamentEnvironmentFitness implements Fitness<OptimizableNeuralNe
 			double direction = 2 * Math.PI * random.nextDouble();
 
 			NeuralNetworkDrivenAgent agent = new NeuralNetworkDrivenAgent(x, y, direction);
-			agent.setBrain(chromosome);
+			agent.setBrain(chromosome.clone());
 
 			env.addAgent(agent);
 		}
