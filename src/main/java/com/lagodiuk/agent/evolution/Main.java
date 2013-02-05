@@ -139,6 +139,22 @@ public class Main {
 		mainEnvironmentLoop();
 	}
 
+	private static void mainEnvironmentLoop() throws InterruptedException {
+		for (;;) {
+			Thread.sleep(50);
+			if (play) {
+				environment.timeStep();
+			}
+			Visualizator.paintEnvironment(displayEnvironmentCanvas, environment);
+			SwingUtilities.invokeLater(new Runnable() {
+				@Override
+				public void run() {
+					environmentPanel.getGraphics().drawImage(displayEnvironmentBufferedImage, 0, 0, null);
+				}
+			});
+		}
+	}
+
 	private static void initializeCanvas(int environmentWidth, int environmentHeight) {
 		displayEnvironmentBufferedImage = new BufferedImage(environmentWidth, environmentHeight, BufferedImage.TYPE_INT_RGB);
 
@@ -159,8 +175,8 @@ public class Main {
 		});
 
 		NeuralNetwork brain = ga.getBest();
-		initializeAgents(environment, brain, agentsCount);
-		initializeFood(environment, foodCount);
+		initializeAgents(brain, agentsCount);
+		initializeFood(foodCount);
 	}
 
 	private static Food createRandomFood(int width, int height) {
@@ -293,22 +309,6 @@ public class Main {
 		});
 	}
 
-	private static void mainEnvironmentLoop() throws InterruptedException {
-		for (;;) {
-			Thread.sleep(50);
-			if (play) {
-				environment.timeStep();
-			}
-			Visualizator.paintEnvironment(displayEnvironmentCanvas, environment);
-			SwingUtilities.invokeLater(new Runnable() {
-				@Override
-				public void run() {
-					environmentPanel.getGraphics().drawImage(displayEnvironmentBufferedImage, 0, 0, null);
-				}
-			});
-		}
-	}
-
 	private static void initializeLoadBrainButtonFunctionality() {
 		loadBrainButton.addActionListener(new ActionListener() {
 			@Override
@@ -326,9 +326,7 @@ public class Main {
 						NeuralNetwork newBrain = NeuralNetwork.unmarsall(in);
 						in.close();
 
-						for (NeuralNetworkDrivenAgent agent : environment.filter(NeuralNetworkDrivenAgent.class)) {
-							agent.setBrain(newBrain);
-						}
+						setAgentBrains(newBrain);
 
 						OptimizableNeuralNetwork optimizableNewBrain = new OptimizableNeuralNetwork(newBrain);
 						int populationSize = ga.getPopulation().getSize();
@@ -390,9 +388,7 @@ public class Main {
 
 				NeuralNetwork newBrain = ga.getBest();
 
-				for (NeuralNetworkDrivenAgent agent : environment.filter(NeuralNetworkDrivenAgent.class)) {
-					agent.setBrain(newBrain);
-				}
+				setAgentBrains(newBrain);
 
 				// reset population number counter
 				populationNumber = 0;
@@ -445,10 +441,8 @@ public class Main {
 						ga.removeIterationListener(progressListener);
 						populationNumber += iterCount;
 
-						NeuralNetwork brain = ga.getBest();
-						for (NeuralNetworkDrivenAgent agent : environment.filter(NeuralNetworkDrivenAgent.class)) {
-							agent.setBrain(brain);
-						}
+						NeuralNetwork newBrain = ga.getBest();
+						setAgentBrains(newBrain);
 
 						SwingUtilities.invokeLater(new Runnable() {
 							@Override
@@ -520,7 +514,7 @@ public class Main {
 		});
 	}
 
-	private static void initializeAgents(AgentsEnvironment environment, NeuralNetwork brain, int agentsCount) {
+	private static void initializeAgents(NeuralNetwork brain, int agentsCount) {
 		int environmentWidth = environment.getWidth();
 		int environmentHeight = environment.getHeight();
 
@@ -536,7 +530,7 @@ public class Main {
 		}
 	}
 
-	private static void initializeFood(AgentsEnvironment environment, int foodCount) {
+	private static void initializeFood(int foodCount) {
 		int environmentWidth = environment.getWidth();
 		int environmentHeight = environment.getHeight();
 
@@ -585,5 +579,11 @@ public class Main {
 				ga.clearCache();
 			}
 		});
+	}
+
+	private static void setAgentBrains(NeuralNetwork newBrain) {
+		for (NeuralNetworkDrivenAgent agent : environment.filter(NeuralNetworkDrivenAgent.class)) {
+			agent.setBrain(newBrain.clone());
+		}
 	}
 }
