@@ -22,3 +22,14 @@ Evolving of neural network driven agents
 * Download <i>simulator.jar</i> from http://github.com/lagodiuk/evo-neural-network-agents/tree/master/bin
 * Launch simulator from command line: <i>java -jar simulator.jar</i>
 * You can find [here](http://github.com/lagodiuk/evo-neural-network-agents/tree/master/brains) different evolved configurations of neural networks
+
+
+### for developers ###
+Language: Java
+Build with: Maven
+<ol>
+<li> git clone https://github.com/lagodiuk/genetic-algorithm.git </li>
+<li> git clone https://github.com/lagodiuk/evo-neural-network-agents.git </li>
+<li> mvn -f genetic-algorithm/pom.xml install </li>
+<li> mvn -f evo-neural-network-agents/pom.xml install </li>
+</ol>
