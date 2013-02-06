@@ -9,6 +9,10 @@ This project depends on [Generic Genetic Algorithm project](http://github.com/la
 
 ## About ##
 
+### basic concepts ###
+How neural network driven agent interacts with environment:
+![Agent in environment](https://raw.github.com/lagodiuk/evo-neural-network-agents/master/about/agent.png)
+
 ### demonstrations on Youtube ###
 Evolving of neural network driven agents
 * [video 1](http://www.youtube.com/watch?v=QV1EML_BWDc)
@@ -34,12 +38,9 @@ Build with: Maven <br/>
 <li> mvn -f evo-neural-network-agents/pom.xml install </li>
 </ol>
 
-### basic concepts ###
-How neural network driven agent interacts with environment:
-![Agent in environment](https://raw.github.com/lagodiuk/evo-neural-network-agents/master/about/agent.png)
-
-How neural networks evolving with genetic algorithm:
-![Neural network](https://raw.github.com/lagodiuk/evo-neural-network-agents/master/about/nn_ga.png)
-
 Architecture of principal components of application:
 ![Architecture](https://raw.github.com/lagodiuk/evo-neural-network-agents/master/about/architecture.png)
+
+### evolving neural networks ###
+How neural networks evolving with genetic algorithm:
+![Neural network](https://raw.github.com/lagodiuk/evo-neural-network-agents/master/about/nn_ga.png)
