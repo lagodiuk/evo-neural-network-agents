@@ -36,10 +36,10 @@ Build with: Maven <br/>
 
 ### basic concepts ###
 How neural network driven agent interacts with environment:
-![Agent in environment](https://raw.github.com/lagodiuk/evo-neural-network-agents/blob/master/about/agent.png)
+![Agent in environment](https://raw.github.com/lagodiuk/evo-neural-network-agents/master/about/agent.png)
 
 How neural networks evolving with genetic algorithm:
-![Neural network](https://raw.github.com/lagodiuk/evo-neural-network-agents/blob/master/about/agent.png)
+![Neural network](https://raw.github.com/lagodiuk/evo-neural-network-agents/master/about/agent.png)
 
 Architecture of principal components of application:
-![Architecture](https://raw.github.com/lagodiuk/evo-neural-network-agents/blob/master/about/architecture.png)
+![Architecture](https://raw.github.com/lagodiuk/evo-neural-network-agents/master/about/architecture.png)
