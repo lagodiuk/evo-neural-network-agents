@@ -25,8 +25,8 @@ Evolving of neural network driven agents
 
 
 ### for developers ###
-Language: Java
-Build with: Maven
+Language: Java <br/>
+Build with: Maven <br/>
 <ol>
 <li> git clone https://github.com/lagodiuk/genetic-algorithm.git </li>
 <li> git clone https://github.com/lagodiuk/evo-neural-network-agents.git </li>
