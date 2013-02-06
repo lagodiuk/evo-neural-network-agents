@@ -547,7 +547,7 @@ public class Main {
 		Population<OptimizableNeuralNetwork> brains = new Population<OptimizableNeuralNetwork>();
 
 		for (int i = 0; i < (populationSize - 1); i++) {
-			if ((baseNeuralNetwork == null) || (random.nextDouble() < 0.5)) {
+			if (baseNeuralNetwork == null) {
 				brains.addChromosome(NeuralNetworkDrivenAgent.randomNeuralNetworkBrain());
 			} else {
 				brains.addChromosome(baseNeuralNetwork.mutate());
