@@ -33,3 +33,13 @@ Build with: Maven <br/>
 <li> mvn -f genetic-algorithm/pom.xml install </li>
 <li> mvn -f evo-neural-network-agents/pom.xml install </li>
 </ol>
+
+### basic concepts ###
+How neural network driven agent interacts with environment:
+![Agent in environment](https://github.com/lagodiuk/evo-neural-network-agents/blob/master/about/agent.png)
+
+How neural networks evolving with genetic algorithm:
+![Neural network](https://github.com/lagodiuk/evo-neural-network-agents/blob/master/about/agent.png)
+
+Architecture of principal components of application:
+![Architecture](https://github.com/lagodiuk/evo-neural-network-agents/blob/master/about/architecture.png)
