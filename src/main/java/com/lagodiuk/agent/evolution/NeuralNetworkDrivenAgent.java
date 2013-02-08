@@ -61,6 +61,9 @@ public class NeuralNetworkDrivenAgent extends Agent {
 		double deltaAngle = this.brain.getAfterActivationSignal(neuronsCount - 2);
 		double deltaSpeed = this.brain.getAfterActivationSignal(neuronsCount - 1);
 
+		deltaSpeed = this.avoidNaNAndInfinity(deltaSpeed);
+		deltaAngle = this.avoidNaNAndInfinity(deltaAngle);
+
 		double newSpeed = this.normalizeSpeed(this.getSpeed() + deltaSpeed);
 		double newAngle = this.getAngle() + this.normalizeDeltaAngle(deltaAngle);
 
@@ -68,6 +71,13 @@ public class NeuralNetworkDrivenAgent extends Agent {
 		this.setSpeed(newSpeed);
 
 		this.move();
+	}
+
+	private double avoidNaNAndInfinity(double x) {
+		if ((Double.isNaN(x)) || Double.isInfinite(x)) {
+			x = 0;
+		}
+		return x;
 	}
 
 	private void activateNeuralNetwork(List<Double> nnInputs) {
