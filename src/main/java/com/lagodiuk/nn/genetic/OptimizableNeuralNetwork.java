@@ -69,6 +69,14 @@ public class OptimizableNeuralNetwork extends NeuralNetwork implements Chromosom
 				this.uniformelyDistributedNeuronsCrossover(thisClone.neurons, anotherClone.neurons);
 			}
 				break;
+		// TODO
+		// case 4: {
+		// this.activationIterations += this.random.nextInt(2) -
+		// this.random.nextInt(2);
+		// this.activationIterations = (this.activationIterations < 1) ? 1 :
+		// this.activationIterations;
+		// }
+		// break;
 		}
 
 		List<OptimizableNeuralNetwork> ret = new ArrayList<OptimizableNeuralNetwork>();
