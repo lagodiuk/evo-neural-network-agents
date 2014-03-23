@@ -1,7 +1,14 @@
 evo-neural-network-agents
 =========================
 
-Evolving of neural networks for collective agents
+Simulation of evolution of neural network driven agents in the small world with the pieces of food.
+
+### Video demonstrations on Youtube ###
+Evolving of neural network driven agents
+* [video 1](http://www.youtube.com/watch?v=QV1EML_BWDc)
+* [video 2](http://www.youtube.com/watch?v=fxOeVCZmc1Y)
+* [video 3](http://www.youtube.com/watch?v=hDnLhehf4lU)
+* [video 4](http://www.youtube.com/watch?v=3nZETrsCMgw)
 
 More info in this [article](http://habrahabr.ru/post/168067/) (in Russian)
 
@@ -12,14 +19,6 @@ This project depends on [Generic Genetic Algorithm project](http://github.com/la
 ### basic concepts ###
 How neural network driven agent interacts with environment:
 ![Agent in environment](https://raw.github.com/lagodiuk/evo-neural-network-agents/master/about/agent.png)
-
-### demonstrations on Youtube ###
-Evolving of neural network driven agents
-* [video 1](http://www.youtube.com/watch?v=QV1EML_BWDc)
-* [video 2](http://www.youtube.com/watch?v=fxOeVCZmc1Y)
-* [video 3](http://www.youtube.com/watch?v=hDnLhehf4lU)
-* [video 4](http://www.youtube.com/watch?v=3nZETrsCMgw)
-
 
 ### try it ###
 * Install [Java Runtime Environment](http://www.java.com/en/download/help/download_options.xml)
