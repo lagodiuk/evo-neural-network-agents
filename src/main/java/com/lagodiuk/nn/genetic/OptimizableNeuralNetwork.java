@@ -38,7 +38,7 @@ public class OptimizableNeuralNetwork extends NeuralNetwork implements Chromosom
 	private static double neuronParamsMutationInterval = 1;
 
 	@XmlTransient
-	private Random random = new Random();
+	private static final Random random = new Random();
 
 	public OptimizableNeuralNetwork() {
 		// Required by JAXB
@@ -59,7 +59,7 @@ public class OptimizableNeuralNetwork extends NeuralNetwork implements Chromosom
 		OptimizableNeuralNetwork anotherClone = anotherChromosome.clone();
 		OptimizableNeuralNetwork thisClone = this.clone();
 
-		switch (this.random.nextInt(4)) {
+		switch (random.nextInt(4)) {
 			case 0: {
 				List<Double> thisWeights = thisClone.neuronsLinks.getAllWeights();
 				List<Double> anotherWeights = anotherClone.neuronsLinks.getAllWeights();
@@ -103,8 +103,8 @@ public class OptimizableNeuralNetwork extends NeuralNetwork implements Chromosom
 	}
 
 	private void twoPointsWeightsCrossover(List<Double> thisWeights, List<Double> anotherWeights) {
-		int left = this.random.nextInt(thisWeights.size());
-		int right = this.random.nextInt(thisWeights.size());
+		int left = random.nextInt(thisWeights.size());
+		int right = random.nextInt(thisWeights.size());
 		if (left > right) {
 			int tmp = right;
 			right = left;
@@ -119,16 +119,16 @@ public class OptimizableNeuralNetwork extends NeuralNetwork implements Chromosom
 
 	private void uniformelyDistributedWeightsCrossover(List<Double> thisWeights, List<Double> anotherWeights) {
 		int weightsSize = thisWeights.size();
-		int itersCount = this.random.nextInt(weightsSize);
+		int itersCount = random.nextInt(weightsSize);
 		if (itersCount == 0) {
 			itersCount = 1;
 		}
 		Set<Integer> used = new HashSet<Integer>();
 		for (int iter = 0; iter < itersCount; iter++) {
-			int i = this.random.nextInt(weightsSize);
+			int i = random.nextInt(weightsSize);
 			if (weightsSize > 1) {
 				while (used.contains(i)) {
-					i = this.random.nextInt(weightsSize);
+					i = random.nextInt(weightsSize);
 				}
 			}
 			double thisWeight = thisWeights.get(i);
@@ -141,8 +141,8 @@ public class OptimizableNeuralNetwork extends NeuralNetwork implements Chromosom
 	}
 
 	private void twoPointsNeuronsCrossover(List<Neuron> thisNeurons, List<Neuron> anotherNeurons) {
-		int left = this.random.nextInt(thisNeurons.size());
-		int right = this.random.nextInt(thisNeurons.size());
+		int left = random.nextInt(thisNeurons.size());
+		int right = random.nextInt(thisNeurons.size());
 		if (left > right) {
 			int tmp = right;
 			right = left;
@@ -157,16 +157,16 @@ public class OptimizableNeuralNetwork extends NeuralNetwork implements Chromosom
 
 	private void uniformelyDistributedNeuronsCrossover(List<Neuron> thisNeurons, List<Neuron> anotherNeurons) {
 		int neuronsSize = thisNeurons.size();
-		int itersCount = this.random.nextInt(neuronsSize);
+		int itersCount = random.nextInt(neuronsSize);
 		if (itersCount == 0) {
 			itersCount = 1;
 		}
 		Set<Integer> used = new HashSet<Integer>();
 		for (int iter = 0; iter < itersCount; iter++) {
-			int i = this.random.nextInt(neuronsSize);
+			int i = random.nextInt(neuronsSize);
 			if (neuronsSize > 1) {
 				while (used.contains(i)) {
-					i = this.random.nextInt(neuronsSize);
+					i = random.nextInt(neuronsSize);
 				}
 			}
 			Neuron thisNeuron = thisNeurons.get(i);
@@ -182,7 +182,7 @@ public class OptimizableNeuralNetwork extends NeuralNetwork implements Chromosom
 	public OptimizableNeuralNetwork mutate() {
 		OptimizableNeuralNetwork mutated = this.clone();
 
-		switch (this.random.nextInt(4)) {
+		switch (random.nextInt(4)) {
 			case 0: {
 				List<Double> weights = mutated.neuronsLinks.getAllWeights();
 				this.mutateWeights(weights);
@@ -210,20 +210,20 @@ public class OptimizableNeuralNetwork extends NeuralNetwork implements Chromosom
 
 	private void mutateWeights(List<Double> weights) {
 		int weightsSize = weights.size();
-		int itersCount = this.random.nextInt(weightsSize);
+		int itersCount = random.nextInt(weightsSize);
 		if (itersCount == 0) {
 			itersCount = 1;
 		}
 		Set<Integer> used = new HashSet<Integer>();
 		for (int iter = 0; iter < itersCount; iter++) {
-			int i = this.random.nextInt(weightsSize);
+			int i = random.nextInt(weightsSize);
 			if (weightsSize > 1) {
 				while (used.contains(i)) {
-					i = this.random.nextInt(weightsSize);
+					i = random.nextInt(weightsSize);
 				}
 			}
 			double w = weights.get(i);
-			w += (this.random.nextGaussian() - this.random.nextGaussian()) * weightsMutationInterval;
+			w += (random.nextGaussian() - random.nextGaussian()) * weightsMutationInterval;
 			// w += (this.random.nextDouble() - this.random.nextDouble()) *
 			// weightsMutationInterval;
 			weights.set(i, w);
@@ -233,16 +233,16 @@ public class OptimizableNeuralNetwork extends NeuralNetwork implements Chromosom
 
 	private void mutateNeuronsFunctionsParams(List<Neuron> neurons) {
 		int neuronsSize = neurons.size();
-		int itersCount = this.random.nextInt(neuronsSize);
+		int itersCount = random.nextInt(neuronsSize);
 		if (itersCount == 0) {
 			itersCount = 1;
 		}
 		Set<Integer> used = new HashSet<Integer>();
 		for (int iter = 0; iter < itersCount; iter++) {
-			int i = this.random.nextInt(neuronsSize);
+			int i = random.nextInt(neuronsSize);
 			if (neuronsSize > 1) {
 				while (used.contains(i)) {
-					i = this.random.nextInt(neuronsSize);
+					i = random.nextInt(neuronsSize);
 				}
 			}
 			Neuron n = neurons.get(i);
@@ -250,7 +250,7 @@ public class OptimizableNeuralNetwork extends NeuralNetwork implements Chromosom
 			List<Double> params = n.getParams();
 			for (int j = 0; j < params.size(); j++) {
 				double param = params.get(j);
-				param += (this.random.nextGaussian() - this.random.nextGaussian()) * neuronParamsMutationInterval;
+				param += (random.nextGaussian() - random.nextGaussian()) * neuronParamsMutationInterval;
 				// param += (this.random.nextDouble() -
 				// this.random.nextDouble()) * neuronParamsMutationInterval;
 				params.set(j, param);
@@ -262,16 +262,16 @@ public class OptimizableNeuralNetwork extends NeuralNetwork implements Chromosom
 
 	private void mutateChangeNeuronsFunctions(List<Neuron> neurons) {
 		int neuronsSize = neurons.size();
-		int itersCount = this.random.nextInt(neuronsSize);
+		int itersCount = random.nextInt(neuronsSize);
 		if (itersCount == 0) {
 			itersCount = 1;
 		}
 		Set<Integer> used = new HashSet<Integer>();
 		for (int iter = 0; iter < itersCount; iter++) {
-			int i = this.random.nextInt(neuronsSize);
+			int i = random.nextInt(neuronsSize);
 			if (neuronsSize > 1) {
 				while (used.contains(i)) {
-					i = this.random.nextInt(neuronsSize);
+					i = random.nextInt(neuronsSize);
 				}
 			}
 			Neuron n = neurons.get(i);
@@ -282,8 +282,8 @@ public class OptimizableNeuralNetwork extends NeuralNetwork implements Chromosom
 	}
 
 	private void shuffleWeightsOnSubinterval(List<Double> weights) {
-		int left = this.random.nextInt(weights.size());
-		int right = this.random.nextInt(weights.size());
+		int left = random.nextInt(weights.size());
+		int right = random.nextInt(weights.size());
 		if (left > right) {
 			int tmp = right;
 			right = left;
